@@ -4,6 +4,6 @@ dist
 .env
 .env.*
 .DS_Store
-
+coverage
 
 # Working on it 
