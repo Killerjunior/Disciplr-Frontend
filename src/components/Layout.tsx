@@ -1,14 +1,13 @@
-import { Link, useLocation } from 'react-router-dom'
-import { WalletConnectButton } from './Wallet/WalletConnectButton'
-import { Text } from './Text'
+import { Link } from 'react-router-dom';
+import NavLink from './NavLink';
+import { WalletConnectButton } from './Wallet/WalletConnectButton';
+import { Text } from './Text';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 export default function Layout({ children }: LayoutProps) {
-  const location = useLocation();
-
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <header className="site-header">
@@ -16,39 +15,20 @@ export default function Layout({ children }: LayoutProps) {
           <Link to="/" className="header-link" aria-label="Disciplr home">
             <Text role="title" as="span">Disciplr</Text>
           </Link>
-          <Link
-            to="/transactions"
-            className="header-link"
-            style={{ color: location.pathname === '/transactions' ? 'var(--accent)' : 'var(--muted)' }}
-            aria-label="Transactions"
-          >
-            <span className="header-transactions-label">Transactions</span>
-            {/* Icon fallback on very small screens */}
-            <span aria-hidden="true" className="header-transactions-icon" style={{ display: 'none' }}>↗</span>
-          </Link>
+          <NavLink to="/transactions" className="header-link" ariaLabel="Transactions">
+            Transactions
+          </NavLink>
         </div>
 
         <nav style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>    
-          <Link
-            to="/"
-            className="header-link"
-            style={{ color: location.pathname === '/' ? 'var(--accent)' : 'var(--muted)' }}
-          >
-            <Text role="caption" as="span">Home</Text>
-          </Link>
-
-          <Link
-            to="/analytics"
-            style={{
-              color: location.pathname === '/analytics' ? 'var(--accent)' : 'var(--muted)',
-              textDecoration: 'none',
-            }}
-          >
-            Analytics
-          </Link>
-          
-          <Link
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <NavLink to="/" className="header-link" ariaLabel="Home">
+              <Text role="caption" as="span">Home</Text>
+            </NavLink>
+            <NavLink to="/analytics" className="header-link" ariaLabel="Analytics">
+              Analytics
+            </NavLink>
+            <Link
               to="/vaults/create"
               style={{
                 color: 'var(--surface)',
@@ -57,7 +37,7 @@ export default function Layout({ children }: LayoutProps) {
                 borderRadius: '9999px',
                 textDecoration: 'none',
                 fontWeight: 500,
-                fontSize: '0.875rem'
+                fontSize: '0.875rem',
               }}
             >
               Create Vault
@@ -67,16 +47,17 @@ export default function Layout({ children }: LayoutProps) {
         </nav>
       </header>
 
-      <main style={{
-        flex: 1,
-        padding: 'var(--spacing-8)',
-        maxWidth: 960,
-        margin: '0 auto',
-        width: '100%',
-      }}>
+      <main
+        style={{
+          flex: 1,
+          padding: 'var(--spacing-8)',
+          maxWidth: 960,
+          margin: '0 auto',
+          width: '100%',
+        }}
+      >
         {children}
       </main>
     </div>
   );
 }
-

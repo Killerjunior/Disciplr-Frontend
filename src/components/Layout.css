@@ -92,3 +92,5 @@
     gap: var(--spacing-4);
   }
 }
+.header-link.active { color: var(--accent); }
+.header-link { color: var(--muted); }
