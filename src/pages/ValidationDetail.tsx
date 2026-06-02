@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Text } from '../components/Text';
 import { useVerifierStore } from '../Zustand/Store';
+import { ConfirmationModal } from '../components/ConfirmationModal';
 
 export default function ValidationDetail() {
   const { vaultId } = useParams<{ vaultId: string }>();
@@ -13,6 +14,7 @@ export default function ValidationDetail() {
   // Local state for notes and the confirmation modal
   const [notes, setNotes] = useState('');
   const [confirmAction, setConfirmAction] = useState<'approve' | 'reject' | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Find the specific task based on the URL parameter
   const task = pendingValidations.find((t) => t.id === vaultId);
@@ -35,13 +37,18 @@ export default function ValidationDetail() {
   }
 
   // Action Handlers
-  const executeAction = () => {
-    if (confirmAction === 'approve') {
-      approveValidation(task.id, notes);
-    } else if (confirmAction === 'reject') {
-      rejectValidation(task.id, notes);
+  const handleOpenModal = (action: 'approve' | 'reject') => {
+    setConfirmAction(action);
+    setIsModalOpen(true);
+  };
+
+  const executeAction = (decision: 'approve' | 'reject', modalNotes: string) => {
+    if (decision === 'approve') {
+      approveValidation(task.id, modalNotes);
+    } else if (decision === 'reject') {
+      rejectValidation(task.id, modalNotes);
     }
-    setConfirmAction(null);
+    setIsModalOpen(false);
     navigate('/verifier/queue'); // Send them back to the list
   };
 
@@ -123,27 +130,25 @@ export default function ValidationDetail() {
             <Text role="display" as="h2" className="mb-4">Verification Actions</Text>
             
             <label className="flex flex-col gap-2 mb-6 flex-grow">
-              <Text role="body" as="span" className="font-medium text-sm">Verification Notes (Required for rejection)</Text>
+              <Text role="body" as="span" className="font-medium text-sm">Initial Verification Notes (Optional)</Text>
               <textarea 
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add your review notes here..."
+                placeholder="Start adding your review notes here..."
                 className="w-full border rounded p-3 text-sm h-32 focus:ring-2 focus:ring-blue-500 outline-none resize-none"
               />
             </label>
 
             <div className="flex flex-col gap-3 mt-auto">
               <button 
-                onClick={() => setConfirmAction('approve')}
+                onClick={() => handleOpenModal('approve')}
                 className="w-full py-3 bg-green-600 text-white font-bold rounded hover:bg-green-700 transition"
               >
                 Approve Milestone
               </button>
               <button 
-                onClick={() => setConfirmAction('reject')}
-                disabled={!notes.trim()}
-                className="w-full py-3 bg-red-600 text-white font-bold rounded hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                title={!notes.trim() ? "Notes are required to reject" : ""}
+                onClick={() => handleOpenModal('reject')}
+                className="w-full py-3 bg-red-600 text-white font-bold rounded hover:bg-red-700 transition"
               >
                 Reject Milestone
               </button>
@@ -152,38 +157,14 @@ export default function ValidationDetail() {
         </div>
       </div>
 
-      {/* Confirmation Modal Overlay */}
-      {confirmAction && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-full">
-            <Text role="display" as="h2" className="mb-2">
-              Confirm {confirmAction === 'approve' ? 'Approval' : 'Rejection'}
-            </Text>
-            <Text role="body" as="p" className="text-gray-600 mb-6">
-              Are you sure you want to {confirmAction} this milestone? 
-              {confirmAction === 'approve' 
-                ? ' This action will authorize the release of funds to the vault owner.' 
-                : ' The vault owner will be notified to revise their submission.'}
-            </Text>
-            <div className="flex justify-end gap-4">
-              <button 
-                onClick={() => setConfirmAction(null)}
-                className="px-4 py-2 border rounded font-medium hover:bg-gray-50 transition"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={executeAction}
-                className={`px-4 py-2 text-white font-medium rounded transition ${
-                  confirmAction === 'approve' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
-                }`}
-              >
-                Yes, {confirmAction}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={executeAction}
+        initialDecision={confirmAction || undefined}
+        initialNotes={notes}
+        evidenceUrl={task.evidenceUrl}
+      />
     </div>
   );
 }
