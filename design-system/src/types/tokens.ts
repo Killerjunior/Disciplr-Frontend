@@ -64,11 +64,14 @@ export interface BorderToken {
   $description?: string;
 }
 
+export type ColorTokenNode = ColorToken | { [key: string]: ColorTokenNode };
+
 export interface DesignTokens {
-  color?: Record<string, ColorToken | Record<string, ColorToken>>;
+  color?: Record<string, ColorTokenNode>;
   typography?: Record<string, TypographyToken>;
-  spacing?: Record<string, SpacingToken>;
+  spacing?: Record<string, SpacingToken | Record<string, SpacingToken>>;
   shadow?: Record<string, ShadowToken>;
   motion?: Record<string, MotionToken>;
   border?: Record<string, BorderToken>;
 }
+

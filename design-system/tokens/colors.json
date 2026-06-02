@@ -423,6 +423,631 @@
           "hsl": "hsl(218, 11%, 65%)"
         }
       }
+    },
+    "chart": {
+      "categorical": {
+        "1": {
+          "light": {
+            "$type": "color",
+            "$value": "#1E40AF",
+            "$description": "First categorical chart color (Blue/Primary)",
+            "hex": "#1E40AF",
+            "rgb": "rgb(30, 64, 175)",
+            "hsl": "hsl(226, 71%, 40%)",
+            "contrast": {
+              "onWhite": 8.72
+            },
+            "accessibility": {
+              "contrastRatios": {
+                "onWhite": 8.72,
+                "onNeutral50": 8.72,
+                "onNeutral900": 4.82
+              },
+              "wcagLevel": "AA",
+              "colorblindSafe": true,
+              "colorblindSimulation": {
+                "protanopia": "#1E3FAF",
+                "deuteranopia": "#1E40AF",
+                "tritanopia": "#1D41B0"
+              }
+            }
+          },
+          "dark": {
+            "$type": "color",
+            "$value": "#3B82F6",
+            "$description": "First categorical chart color (Blue) in dark mode",
+            "hex": "#3B82F6",
+            "rgb": "rgb(59, 130, 246)",
+            "hsl": "hsl(217, 91%, 60%)",
+            "contrast": {
+              "onNeutral900": 4.82
+            },
+            "accessibility": {
+              "contrastRatios": {
+                "onNeutral900": 4.82,
+                "onNeutral800": 4.09,
+                "onWhite": 8.72
+              },
+              "wcagLevel": "AA",
+              "colorblindSafe": true,
+              "colorblindSimulation": {
+                "protanopia": "#3A81F6",
+                "deuteranopia": "#3B82F6",
+                "tritanopia": "#3A83F7"
+              }
+            }
+          }
+        },
+        "2": {
+          "light": {
+            "$type": "color",
+            "$value": "#0D9488",
+            "$description": "Second categorical chart color (Teal/Secondary)",
+            "hex": "#0D9488",
+            "rgb": "rgb(13, 148, 136)",
+            "hsl": "hsl(174, 84%, 32%)",
+            "contrast": {
+              "onWhite": 3.74
+            },
+            "accessibility": {
+              "contrastRatios": {
+                "onWhite": 3.74,
+                "onNeutral50": 3.74,
+                "onNeutral900": 7.13
+              },
+              "wcagLevel": "AA",
+              "colorblindSafe": true,
+              "colorblindSimulation": {
+                "protanopia": "#798782",
+                "deuteranopia": "#828583",
+                "tritanopia": "#009494"
+              }
+            }
+          },
+          "dark": {
+            "$type": "color",
+            "$value": "#14B8A6",
+            "$description": "Second categorical chart color (Teal) in dark mode",
+            "hex": "#14B8A6",
+            "rgb": "rgb(20, 184, 166)",
+            "hsl": "hsl(173, 80%, 40%)",
+            "contrast": {
+              "onNeutral900": 7.13
+            },
+            "accessibility": {
+              "contrastRatios": {
+                "onNeutral900": 7.13,
+                "onNeutral800": 5.85,
+                "onWhite": 3.74
+              },
+              "wcagLevel": "AA",
+              "colorblindSafe": true,
+              "colorblindSimulation": {
+                "protanopia": "#9CA9A3",
+                "deuteranopia": "#A5A7A4",
+                "tritanopia": "#00B8B9"
+              }
+            }
+          }
+        },
+        "3": {
+          "light": {
+            "$type": "color",
+            "$value": "#D97706",
+            "$description": "Third categorical chart color (Amber/Warning)",
+            "hex": "#D97706",
+            "rgb": "rgb(217, 119, 6)",
+            "hsl": "hsl(32, 95%, 44%)",
+            "contrast": {
+              "onWhite": 3.19
+            },
+            "accessibility": {
+              "contrastRatios": {
+                "onWhite": 3.19,
+                "onNeutral50": 3.19,
+                "onNeutral900": 8.26
+              },
+              "wcagLevel": "AA",
+              "colorblindSafe": true,
+              "colorblindSimulation": {
+                "protanopia": "#B69000",
+                "deuteranopia": "#A89800",
+                "tritanopia": "#D87228"
+              }
+            }
+          },
+          "dark": {
+            "$type": "color",
+            "$value": "#F59E0B",
+            "$description": "Third categorical chart color (Amber) in dark mode",
+            "hex": "#F59E0B",
+            "rgb": "rgb(245, 158, 11)",
+            "hsl": "hsl(38, 92%, 50%)",
+            "contrast": {
+              "onNeutral900": 8.26
+            },
+            "accessibility": {
+              "contrastRatios": {
+                "onNeutral900": 8.26,
+                "onNeutral800": 6.84,
+                "onWhite": 3.19
+              },
+              "wcagLevel": "AA",
+              "colorblindSafe": true,
+              "colorblindSimulation": {
+                "protanopia": "#CEB300",
+                "deuteranopia": "#BFBC00",
+                "tritanopia": "#F39739"
+              }
+            }
+          }
+        },
+        "4": {
+          "light": {
+            "$type": "color",
+            "$value": "#6D28D9",
+            "$description": "Fourth categorical chart color (Purple/Accent)",
+            "hex": "#6D28D9",
+            "rgb": "rgb(109, 40, 217)",
+            "hsl": "hsl(263, 69%, 50%)",
+            "contrast": {
+              "onWhite": 7.1
+            },
+            "accessibility": {
+              "contrastRatios": {
+                "onWhite": 7.1,
+                "onNeutral50": 7.1,
+                "onNeutral900": 4.19
+              },
+              "wcagLevel": "AA",
+              "colorblindSafe": true,
+              "colorblindSimulation": {
+                "protanopia": "#3D54DB",
+                "deuteranopia": "#245CDB",
+                "tritanopia": "#6A37AC"
+              }
+            }
+          },
+          "dark": {
+            "$type": "color",
+            "$value": "#8B5CF6",
+            "$description": "Fourth categorical chart color (Purple) in dark mode",
+            "hex": "#8B5CF6",
+            "rgb": "rgb(139, 92, 246)",
+            "hsl": "hsl(258, 91%, 66%)",
+            "contrast": {
+              "onNeutral900": 4.19
+            },
+            "accessibility": {
+              "contrastRatios": {
+                "onNeutral900": 4.19,
+                "onNeutral800": 3.44,
+                "onWhite": 7.1
+              },
+              "wcagLevel": "AA",
+              "colorblindSafe": true,
+              "colorblindSimulation": {
+                "protanopia": "#5E7CF7",
+                "deuteranopia": "#4783F7",
+                "tritanopia": "#886BCF"
+              }
+            }
+          }
+        },
+        "5": {
+          "light": {
+            "$type": "color",
+            "$value": "#BE185D",
+            "$description": "Fifth categorical chart color (Pink/Rose)",
+            "hex": "#BE185D",
+            "rgb": "rgb(190, 24, 93)",
+            "hsl": "hsl(335, 78%, 42%)",
+            "contrast": {
+              "onWhite": 6.04
+            },
+            "accessibility": {
+              "contrastRatios": {
+                "onWhite": 6.04,
+                "onNeutral50": 6.04,
+                "onNeutral900": 5.03
+              },
+              "wcagLevel": "AA",
+              "colorblindSafe": true,
+              "colorblindSimulation": {
+                "protanopia": "#7D6A74",
+                "deuteranopia": "#8C6372",
+                "tritanopia": "#BD2044"
+              }
+            }
+          },
+          "dark": {
+            "$type": "color",
+            "$value": "#EC4899",
+            "$description": "Fifth categorical chart color (Pink) in dark mode",
+            "hex": "#EC4899",
+            "rgb": "rgb(236, 72, 153)",
+            "hsl": "hsl(330, 81%, 60%)",
+            "contrast": {
+              "onNeutral900": 5.03
+            },
+            "accessibility": {
+              "contrastRatios": {
+                "onNeutral900": 5.03,
+                "onNeutral800": 4.13,
+                "onWhite": 6.04
+              },
+              "wcagLevel": "AA",
+              "colorblindSafe": true,
+              "colorblindSimulation": {
+                "protanopia": "#A4A6AA",
+                "deuteranopia": "#B69CA9",
+                "tritanopia": "#EB4E6B"
+              }
+            }
+          }
+        }
+      },
+      "sequential": {
+        "1": {
+          "light": {
+            "$type": "color",
+            "$value": "#E0F2FE",
+            "$description": "First sequential step (lowest intensity/contrast in light mode)",
+            "hex": "#E0F2FE",
+            "rgb": "rgb(224, 242, 254)",
+            "hsl": "hsl(203, 95%, 94%)",
+            "contrast": {
+              "onWhite": 1.15
+            },
+            "accessibility": {
+              "contrastRatios": {
+                "onWhite": 1.15,
+                "onNeutral900": 15.46
+              },
+              "wcagLevel": "AA",
+              "colorblindSafe": true,
+              "colorblindSimulation": {
+                "protanopia": "#E3F1FD",
+                "deuteranopia": "#E5F0FE",
+                "tritanopia": "#E1F2FB"
+              }
+            }
+          },
+          "dark": {
+            "$type": "color",
+            "$value": "#0C4A6E",
+            "$description": "First sequential step (lowest intensity/contrast in dark mode)",
+            "hex": "#0C4A6E",
+            "rgb": "rgb(12, 74, 110)",
+            "hsl": "hsl(202, 80%, 24%)",
+            "contrast": {
+              "onNeutral900": 1.88
+            },
+            "accessibility": {
+              "contrastRatios": {
+                "onNeutral900": 1.88,
+                "onWhite": 9.46
+              },
+              "wcagLevel": "AA",
+              "colorblindSafe": true,
+              "colorblindSimulation": {
+                "protanopia": "#24476B",
+                "deuteranopia": "#26466D",
+                "tritanopia": "#0A4C63"
+              }
+            }
+          }
+        },
+        "2": {
+          "light": {
+            "$type": "color",
+            "$value": "#7DD3FC",
+            "$description": "Second sequential step in light mode",
+            "hex": "#7DD3FC",
+            "rgb": "rgb(125, 211, 252)",
+            "hsl": "hsl(200, 96%, 74%)",
+            "contrast": {
+              "onWhite": 1.67
+            },
+            "accessibility": {
+              "contrastRatios": {
+                "onWhite": 1.67,
+                "onNeutral900": 10.64
+              },
+              "wcagLevel": "AA",
+              "colorblindSafe": true,
+              "colorblindSimulation": {
+                "protanopia": "#A3CBFA",
+                "deuteranopia": "#A7C9FC",
+                "tritanopia": "#7CD5EC"
+              }
+            }
+          },
+          "dark": {
+            "$type": "color",
+            "$value": "#0369A1",
+            "$description": "Second sequential step in dark mode",
+            "hex": "#0369A1",
+            "rgb": "rgb(3, 105, 161)",
+            "hsl": "hsl(201, 96%, 32%)",
+            "contrast": {
+              "onNeutral900": 2.99
+            },
+            "accessibility": {
+              "contrastRatios": {
+                "onNeutral900": 2.99,
+                "onWhite": 5.93
+              },
+              "wcagLevel": "AA",
+              "colorblindSafe": true,
+              "colorblindSimulation": {
+                "protanopia": "#4C619A",
+                "deuteranopia": "#4A629E",
+                "tritanopia": "#006C92"
+              }
+            }
+          }
+        },
+        "3": {
+          "light": {
+            "$type": "color",
+            "$value": "#0EA5E9",
+            "$description": "Third sequential step in light mode",
+            "hex": "#0EA5E9",
+            "rgb": "rgb(14, 165, 233)",
+            "hsl": "hsl(199, 89%, 48%)",
+            "contrast": {
+              "onWhite": 2.77
+            },
+            "accessibility": {
+              "contrastRatios": {
+                "onWhite": 2.77,
+                "onNeutral900": 6.4
+              },
+              "wcagLevel": "AA",
+              "colorblindSafe": true,
+              "colorblindSimulation": {
+                "protanopia": "#799DE1",
+                "deuteranopia": "#72A0E6",
+                "tritanopia": "#00A9D2"
+              }
+            }
+          },
+          "dark": {
+            "$type": "color",
+            "$value": "#0EA5E9",
+            "$description": "Third sequential step in dark mode",
+            "hex": "#0EA5E9",
+            "rgb": "rgb(14, 165, 233)",
+            "hsl": "hsl(199, 89%, 48%)",
+            "contrast": {
+              "onNeutral900": 6.4
+            },
+            "accessibility": {
+              "contrastRatios": {
+                "onNeutral900": 6.4,
+                "onWhite": 2.77
+              },
+              "wcagLevel": "AA",
+              "colorblindSafe": true,
+              "colorblindSimulation": {
+                "protanopia": "#799DE1",
+                "deuteranopia": "#72A0E6",
+                "tritanopia": "#00A9D2"
+              }
+            }
+          }
+        },
+        "4": {
+          "light": {
+            "$type": "color",
+            "$value": "#0369A1",
+            "$description": "Fourth sequential step in light mode",
+            "hex": "#0369A1",
+            "rgb": "rgb(3, 105, 161)",
+            "hsl": "hsl(201, 96%, 32%)",
+            "contrast": {
+              "onWhite": 5.93
+            },
+            "accessibility": {
+              "contrastRatios": {
+                "onWhite": 5.93,
+                "onNeutral900": 2.99
+              },
+              "wcagLevel": "AA",
+              "colorblindSafe": true,
+              "colorblindSimulation": {
+                "protanopia": "#4C619A",
+                "deuteranopia": "#4A629E",
+                "tritanopia": "#006C92"
+              }
+            }
+          },
+          "dark": {
+            "$type": "color",
+            "$value": "#7DD3FC",
+            "$description": "Fourth sequential step in dark mode",
+            "hex": "#7DD3FC",
+            "rgb": "rgb(125, 211, 252)",
+            "hsl": "hsl(200, 96%, 74%)",
+            "contrast": {
+              "onNeutral900": 10.64
+            },
+            "accessibility": {
+              "contrastRatios": {
+                "onNeutral900": 10.64,
+                "onWhite": 1.67
+              },
+              "wcagLevel": "AA",
+              "colorblindSafe": true,
+              "colorblindSimulation": {
+                "protanopia": "#A3CBFA",
+                "deuteranopia": "#A7C9FC",
+                "tritanopia": "#7CD5EC"
+              }
+            }
+          }
+        },
+        "5": {
+          "light": {
+            "$type": "color",
+            "$value": "#0C4A6E",
+            "$description": "Fifth sequential step (highest intensity/contrast in light mode)",
+            "hex": "#0C4A6E",
+            "rgb": "rgb(12, 74, 110)",
+            "hsl": "hsl(202, 80%, 24%)",
+            "contrast": {
+              "onWhite": 9.46
+            },
+            "accessibility": {
+              "contrastRatios": {
+                "onWhite": 9.46,
+                "onNeutral900": 1.88
+              },
+              "wcagLevel": "AA",
+              "colorblindSafe": true,
+              "colorblindSimulation": {
+                "protanopia": "#24476B",
+                "deuteranopia": "#26466D",
+                "tritanopia": "#0A4C63"
+              }
+            }
+          },
+          "dark": {
+            "$type": "color",
+            "$value": "#E0F2FE",
+            "$description": "Fifth sequential step (highest intensity/contrast in dark mode)",
+            "hex": "#E0F2FE",
+            "rgb": "rgb(224, 242, 254)",
+            "hsl": "hsl(203, 95%, 94%)",
+            "contrast": {
+              "onNeutral900": 15.46
+            },
+            "accessibility": {
+              "contrastRatios": {
+                "onNeutral900": 15.46,
+                "onWhite": 1.15
+              },
+              "wcagLevel": "AA",
+              "colorblindSafe": true,
+              "colorblindSimulation": {
+                "protanopia": "#E3F1FD",
+                "deuteranopia": "#E5F0FE",
+                "tritanopia": "#E1F2FB"
+              }
+            }
+          }
+        }
+      },
+      "axis": {
+        "light": {
+          "$type": "color",
+          "$value": "#6B7280",
+          "$description": "Chart axis lines and ticks in light mode",
+          "hex": "#6B7280",
+          "rgb": "rgb(107, 114, 128)",
+          "hsl": "hsl(220, 9%, 46%)"
+        },
+        "dark": {
+          "$type": "color",
+          "$value": "#9CA3AF",
+          "$description": "Chart axis lines and ticks in dark mode",
+          "hex": "#9CA3AF",
+          "rgb": "rgb(156, 163, 175)",
+          "hsl": "hsl(218, 11%, 65%)"
+        }
+      },
+      "grid": {
+        "light": {
+          "$type": "color",
+          "$value": "#E5E7EB",
+          "$description": "Chart Cartesian gridlines in light mode",
+          "hex": "#E5E7EB",
+          "rgb": "rgb(229, 231, 235)",
+          "hsl": "hsl(220, 13%, 91%)"
+        },
+        "dark": {
+          "$type": "color",
+          "$value": "#1F2937",
+          "$description": "Chart Cartesian gridlines in dark mode",
+          "hex": "#1F2937",
+          "rgb": "rgb(31, 41, 55)",
+          "hsl": "hsl(215, 28%, 17%)"
+        }
+      },
+      "tooltipBg": {
+        "light": {
+          "$type": "color",
+          "$value": "#FFFFFF",
+          "$description": "Chart tooltip background surface in light mode",
+          "hex": "#FFFFFF",
+          "rgb": "rgb(255, 255, 255)",
+          "hsl": "hsl(0, 0%, 100%)"
+        },
+        "dark": {
+          "$type": "color",
+          "$value": "#0C101A",
+          "$description": "Chart tooltip background surface in dark mode",
+          "hex": "#0C101A",
+          "rgb": "rgb(12, 16, 26)",
+          "hsl": "hsl(223, 37%, 7%)"
+        }
+      },
+      "tooltipBorder": {
+        "light": {
+          "$type": "color",
+          "$value": "#E5E7EB",
+          "$description": "Chart tooltip border in light mode",
+          "hex": "#E5E7EB",
+          "rgb": "rgb(229, 231, 235)",
+          "hsl": "hsl(220, 13%, 91%)"
+        },
+        "dark": {
+          "$type": "color",
+          "$value": "#1E2D42",
+          "$description": "Chart tooltip border in dark mode",
+          "hex": "#1E2D42",
+          "rgb": "rgb(30, 45, 66)",
+          "hsl": "hsl(215, 38%, 19%)"
+        }
+      },
+      "tooltipText": {
+        "light": {
+          "$type": "color",
+          "$value": "#111827",
+          "$description": "Chart tooltip body text in light mode",
+          "hex": "#111827",
+          "rgb": "rgb(17, 24, 39)",
+          "hsl": "hsl(222, 39%, 11%)"
+        },
+        "dark": {
+          "$type": "color",
+          "$value": "#E8EDF5",
+          "$description": "Chart tooltip body text in dark mode",
+          "hex": "#E8EDF5",
+          "rgb": "rgb(232, 237, 245)",
+          "hsl": "hsl(217, 38%, 94%)"
+        }
+      },
+      "tooltipLabel": {
+        "light": {
+          "$type": "color",
+          "$value": "#6B7280",
+          "$description": "Chart tooltip label/title text in light mode",
+          "hex": "#6B7280",
+          "rgb": "rgb(107, 114, 128)",
+          "hsl": "hsl(220, 9%, 46%)"
+        },
+        "dark": {
+          "$type": "color",
+          "$value": "#6B7A8F",
+          "$description": "Chart tooltip label/title text in dark mode",
+          "hex": "#6B7A8F",
+          "rgb": "rgb(107, 122, 143)",
+          "hsl": "hsl(215, 14%, 49%)"
+        }
+      }
     }
   }
 }
+

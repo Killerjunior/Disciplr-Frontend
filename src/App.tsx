@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { WalletProvider } from './context/WalletContext'
 import { ThemeProvider } from './context/ThemeContext'
@@ -9,7 +10,11 @@ import Dashboard from './pages/Dashboard'
 import Vaults from './pages/Vaults'
 import CreateVault from './pages/CreateVault'
 import VaultDetail from './pages/VaultDetail'
-import VaultTransactions from './pages/VaultTransactions'
+import VaultTransactions from './pages/VaultTransactions';
+
+          <Route path="/transactions" element={<VaultTransactions />} />
+
+const Analytics = lazy(() => import('./pages/Analytics'))
 
 
 // New Verifier Page Imports
@@ -17,6 +22,7 @@ import VerifierDashboard from './pages/VerifierDashboard'
 import PendingValidations from './pages/PendingValidations'
 import ValidationDetail from './pages/ValidationDetail'
 import ValidationHistory from './pages/ValidationHistory'
+import NotFound from './pages/NotFound'
 
 export default function App() {
   return (
@@ -39,6 +45,9 @@ export default function App() {
               <Route path="/verifier/queue" element={<PendingValidations />} />
               <Route path="/verifier/queue/:vaultId" element={<ValidationDetail />} />
               <Route path="/verifier/history" element={<ValidationHistory />} />
+              
+              {/* Catch-all route for unmatched paths */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </Layout>
         </BrowserRouter>

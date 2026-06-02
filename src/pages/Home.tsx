@@ -12,25 +12,48 @@ export default function Home() {
           <Shield size={64} style={{ color: 'var(--primary)', marginBottom: 'var(--space-4)' }} />
         </div>
         <Text role="display" as="h1" style={{ marginBottom: 'var(--space-4)', maxWidth: '800px', marginLeft: 'auto', marginRight: 'auto' }}>
-          Secure Your Goals with Disciplr
+          Stake & Secure Your Goals with Disciplr
         </Text>
         <Text role="body" as="p" style={{ color: 'var(--muted)', marginBottom: 'var(--space-8)', maxWidth: '600px', marginLeft: 'auto', marginRight: 'auto', fontSize: 'var(--text-lg)' }}>
-          Lock USDC in programmable vaults on Stellar's Soroban network. Achieve milestones or redirect funds automatically for unstoppable progress.
+          Time‑locked capital vaults on Stellar that release on validation or redirect on failure.
         </Text>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 'var(--space-4)', flexWrap: 'wrap', marginBottom: 'var(--space-4)' }}>
-          <WalletConnectButton />
+          <Link
+            to="/vaults/create"
+            style={{
+              backgroundColor: 'var(--primary)',
+              color: 'white',
+              padding: 'var(--space-2) var(--space-4)',
+              borderRadius: 'var(--radius)',
+              textDecoration: 'none',
+              fontWeight: 600,
+            }}
+          >
+            Create Your First Vault
+          </Link>
+          <Link
+            to="/dashboard"
+            style={{
+              color: 'var(--primary)',
+              textDecoration: 'none',
+              fontWeight: 500,
+              fontSize: 'var(--text-base)',
+            }}
+          >
+            Dashboard
+          </Link>
+          <Link
+            to="/vaults"
+            style={{
+              color: 'var(--primary)',
+              textDecoration: 'none',
+              fontWeight: 500,
+              fontSize: 'var(--text-base)',
+            }}
+          >
+            My Vaults
+          </Link>
         </div>
-        <Link
-          to="/docs"
-          style={{
-            color: 'var(--primary)',
-            textDecoration: 'none',
-            fontWeight: 500,
-            fontSize: 'var(--text-base)',
-          }}
-        >
-          Learn more about Disciplr →
-        </Link>
       </section>
 
       {/* How It Works */}

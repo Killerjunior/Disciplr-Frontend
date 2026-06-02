@@ -83,6 +83,28 @@
       "$value": "96px",
       "rem": "6rem",
       "$description": "Maximum spacing"
+    },
+    "container": {
+      "narrow": {
+        "$type": "dimension",
+        "$value": "640px",
+        "$description": "Long-form and form column max-width"
+      },
+      "standard": {
+        "$type": "dimension",
+        "$value": "960px",
+        "$description": "Standard page content max-width"
+      },
+      "wide": {
+        "$type": "dimension",
+        "$value": "1100px",
+        "$description": "Wide content max-width for dashboards and tables"
+      },
+      "max": {
+        "$type": "dimension",
+        "$value": "1280px",
+        "$description": "Full desktop container max-width matching grid.desktop.maxWidth"
+      }
     }
   },
   "breakpoint": {

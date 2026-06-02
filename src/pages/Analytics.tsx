@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar,
   PieChart, Pie, Cell,
@@ -11,10 +11,44 @@ import {
   Users, Lock, Crown
 } from 'lucide-react'
 import jsPDF from 'jspdf'
+import { useTheme } from '../context/ThemeContext'
+import { buildAnalyticsSeriesColors, getAnalyticsChartTokens } from './analyticsTheme'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Period = '7d' | '30d' | '90d' | '1y' | 'All'
+
+function useAnalyticsChartTokens() {
+  const { theme } = useTheme()
+  const [tokens, setTokens] = useState(() => getAnalyticsChartTokens())
+
+  useEffect(() => {
+    const root = document.documentElement
+    const syncTokens = () => setTokens(getAnalyticsChartTokens(root))
+    syncTokens()
+
+    const observer = new MutationObserver(syncTokens)
+    observer.observe(root, { attributes: true, attributeFilter: ['data-theme'] })
+
+    return () => observer.disconnect()
+  }, [theme])
+
+  return tokens
+}
+
+function usePrefersReducedMotion() {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const syncPreference = () => setPrefersReducedMotion(mediaQuery.matches)
+    syncPreference()
+    mediaQuery.addEventListener('change', syncPreference)
+    return () => mediaQuery.removeEventListener('change', syncPreference)
+  }, [])
+
+  return prefersReducedMotion
+}
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 
@@ -108,8 +142,6 @@ const vaultStatusData = [
   { name: 'Active', value: 3 },
   { name: 'Failed', value: 4 },
 ]
-const PIE_COLORS = ['#00c389', '#4a90d9', '#e5534b']
-
 const milestoneTypes = [
   { type: 'Daily Exercise', count: 12 },
   { type: 'Study Goal', count: 9 },
@@ -125,17 +157,6 @@ const benchmarkData = [
   { metric: 'Streak', you: 5, platform: 3 },
   { metric: 'Milestones/mo', you: 9, platform: 5 },
 ]
-
-const TOOLTIP_STYLE = {
-  contentStyle: {
-    background: '#0a0e17',
-    border: '1px solid #1e2d42',
-    borderRadius: '10px',
-    fontSize: '0.85rem',
-  },
-  itemStyle: { color: '#e8edf5' },
-  labelStyle: { color: '#6b7a8f' },
-}
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -168,6 +189,10 @@ function ChartTitle({ children }: { children: React.ReactNode }) {
     </h3>
   )
 } 
+
+function ChartSummary({ children }: { children: React.ReactNode }) {
+  return <p className="sr-only">{children}</p>
+}
 
 function SkeletonBox({ height = 220 }: { height?: number }) {
   return (
@@ -337,6 +362,9 @@ function exportPDF(period: Period, data: typeof allData['30d']) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function Analytics() {
+  const chartTokens = useAnalyticsChartTokens()
+  const seriesColors = useMemo(() => buildAnalyticsSeriesColors(chartTokens), [chartTokens])
+  const prefersReducedMotion = usePrefersReducedMotion()
   const [period, setPeriod] = useState<Period>('30d')
   const [showComparison, setShowComparison] = useState(false)
   const [customFrom, setCustomFrom] = useState('')
@@ -357,6 +385,18 @@ export default function Analytics() {
   }))
 
   const displayData = showComparison ? comparisonData : chartData
+  const chartAnimationEnabled = !prefersReducedMotion
+  const tooltipStyle = useMemo(() => ({
+    contentStyle: {
+      background: seriesColors.tooltipBackground,
+      border: `1px solid ${seriesColors.tooltipBorder}`,
+      borderRadius: '10px',
+      color: seriesColors.tooltipText,
+      fontSize: '0.85rem',
+    },
+    itemStyle: { color: seriesColors.tooltipText },
+    labelStyle: { color: seriesColors.tooltipMuted },
+  }), [seriesColors])
 
   return (
     <>
@@ -364,6 +404,17 @@ export default function Analytics() {
         @keyframes disciplr-pulse {
           0%, 100% { opacity: 0.35; }
           50% { opacity: 0.65; }
+        }
+        .sr-only {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          padding: 0;
+          margin: -1px;
+          overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+          white-space: nowrap;
+          border: 0;
         }
         .period-btn {
           padding: 0.45rem 1.1rem;
@@ -380,7 +431,7 @@ export default function Analytics() {
         .period-btn.active {
           background: var(--accent);
           border-color: var(--accent);
-          color: #0a0e17;
+          color: var(--bg);
           font-weight: 700;
         }
         .toggle-btn {
@@ -394,9 +445,9 @@ export default function Analytics() {
           transition: all 0.15s;
         }
         .toggle-btn.active {
-          border-color: #4a90d9;
-          color: #4a90d9;
-          background: rgba(74,144,217,0.08);
+          border-color: var(--info);
+          color: var(--info);
+          background: var(--accent-transparent);
         }
         .action-btn {
           padding: 0.45rem 1rem;
@@ -439,6 +490,18 @@ export default function Analytics() {
           .insights-grid { grid-template-columns: 1fr 1fr !important; }
           .flow-grid { grid-template-columns: 1fr !important; }
           .bench-grid { grid-template-columns: 1fr !important; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .disciplr-progress-bar,
+          .period-btn,
+          .toggle-btn,
+          .action-btn {
+            transition: none !important;
+            animation: none !important;
+          }
+          [style*="disciplr-pulse"] {
+            animation: none !important;
+          }
         }
       `}</style>
 
@@ -519,11 +582,11 @@ export default function Analytics() {
             style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem' }}
           >
             {[
-              { label: 'Total Capital Locked', value: '$12,450', sub: 'USDC · All time', icon: <Target size={17} color="#00c389" />, up: true },
-              { label: 'Active Capital', value: '$3,200', sub: 'USDC · Right now', icon: <TrendingUp size={17} color="#4a90d9" />, up: true },
-              { label: 'Success Rate', value: '85%', sub: '+7% vs last period', icon: <CheckCircle size={17} color="#00c389" />, up: true },
-              { label: 'Total Vaults', value: '21', sub: 'Created all time', icon: <Zap size={17} color="#00c389" />, up: true },
-              { label: 'Completed / Failed', value: '14 / 4', sub: '3 currently active', icon: <AlertTriangle size={17} color="#e5534b" />, up: false },
+              { label: 'Total Capital Locked', value: '$12,450', sub: 'USDC · All time', icon: <Target size={17} color={seriesColors.success} />, up: true },
+              { label: 'Active Capital', value: '$3,200', sub: 'USDC · Right now', icon: <TrendingUp size={17} color={seriesColors.active} />, up: true },
+              { label: 'Success Rate', value: '85%', sub: '+7% vs last period', icon: <CheckCircle size={17} color={seriesColors.success} />, up: true },
+              { label: 'Total Vaults', value: '21', sub: 'Created all time', icon: <Zap size={17} color={seriesColors.success} />, up: true },
+              { label: 'Completed / Failed', value: '14 / 4', sub: '3 currently active', icon: <AlertTriangle size={17} color={seriesColors.failed} />, up: false },
             ].map((stat, i) => (
               <Card key={i}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
@@ -531,7 +594,7 @@ export default function Analytics() {
                   {stat.icon}
                 </div>
                 <div style={{ fontSize: '1.55rem', fontWeight: 800, marginBottom: '0.2rem' }}>{stat.value}</div>
-                <div style={{ fontSize: '0.75rem', color: stat.up ? '#00c389' : '#e5534b', display: 'flex', alignItems: 'center', gap: '0.15rem' }}>
+                <div style={{ fontSize: '0.75rem', color: stat.up ? seriesColors.success : seriesColors.failed, display: 'flex', alignItems: 'center', gap: '0.15rem' }}>
                   {stat.up ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}
                   {stat.sub}
                 </div>
@@ -542,24 +605,28 @@ export default function Analytics() {
 
         {/* ── SECTION 2: Performance Charts ── */}
         <div style={{ marginBottom: '2rem' }}>
-          <SectionTitle>Performance Charts {showComparison && <span style={{ color: '#4a90d9', fontSize: '0.75rem', fontWeight: 400, marginLeft: '0.5rem' }}>Comparing with previous period</span>}</SectionTitle>
+          <SectionTitle>Performance Charts {showComparison && <span style={{ color: seriesColors.comparison, fontSize: '0.75rem', fontWeight: 400, marginLeft: '0.5rem' }}>Comparing with previous period</span>}</SectionTitle>
           <div className="chart-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.25rem' }}>
 
             {/* Success Rate */}
             <Card>
               <ChartTitle>Success Rate Over Time</ChartTitle>
+              <ChartSummary>
+                Line chart summarizing success and failure percentages for the selected {period} period.
+                {showComparison ? ' Previous period success rate is included for comparison.' : ''}
+              </ChartSummary>
               {isLoading ? <SkeletonBox /> : !hasData ? <EmptyState /> : (
                 <ResponsiveContainer width="100%" height={220}>
                   <LineChart data={displayData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1e2d42" vertical={false} />
-                    <XAxis dataKey="name" stroke="#6b7a8f" tick={{ fill: '#6b7a8f', fontSize: 11 }} />
-                    <YAxis stroke="#6b7a8f" tick={{ fill: '#6b7a8f', fontSize: 11 }} unit="%" />
-                    <Tooltip {...TOOLTIP_STYLE} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={seriesColors.grid} vertical={false} />
+                    <XAxis dataKey="name" stroke={seriesColors.axis} tick={{ fill: seriesColors.axis, fontSize: 11 }} />
+                    <YAxis stroke={seriesColors.axis} tick={{ fill: seriesColors.axis, fontSize: 11 }} unit="%" />
+                    <Tooltip {...tooltipStyle} />
                     {showComparison && <Legend wrapperStyle={{ fontSize: '0.78rem' }} />}
-                    <Line type="monotone" dataKey="success" stroke="#00c389" strokeWidth={2.5} dot={{ r: 3, fill: '#00c389' }} name="This Period %" />
-                    <Line type="monotone" dataKey="failed" stroke="#e5534b" strokeWidth={2} dot={{ r: 2, fill: '#e5534b' }} name="Failed %" strokeDasharray="4 2" />
+                    <Line type="monotone" dataKey="success" stroke={seriesColors.success} strokeWidth={2.5} dot={{ r: 3, fill: seriesColors.success }} name="This Period %" isAnimationActive={chartAnimationEnabled} />
+                    <Line type="monotone" dataKey="failed" stroke={seriesColors.failed} strokeWidth={2} dot={{ r: 2, fill: seriesColors.failed }} name="Failed %" strokeDasharray="4 2" isAnimationActive={chartAnimationEnabled} />
                     {showComparison && (
-                      <Line type="monotone" dataKey="prevSuccess" stroke="#4a90d9" strokeWidth={1.5} dot={false} name="Prev Period %" strokeDasharray="6 3" />
+                      <Line type="monotone" dataKey="prevSuccess" stroke={seriesColors.comparison} strokeWidth={1.5} dot={false} name="Prev Period %" strokeDasharray="6 3" isAnimationActive={chartAnimationEnabled} />
                     )}
                   </LineChart>
                 </ResponsiveContainer>
@@ -569,27 +636,31 @@ export default function Analytics() {
             {/* Capital Locked */}
             <Card>
               <ChartTitle>Capital Locked Over Time</ChartTitle>
+              <ChartSummary>
+                Area chart showing USDC capital locked over the selected {period} period.
+                {showComparison ? ' Previous period capital is shown as a comparison area.' : ''}
+              </ChartSummary>
               {isLoading ? <SkeletonBox /> : !hasData ? <EmptyState /> : (
                 <ResponsiveContainer width="100%" height={220}>
                   <AreaChart data={displayData}>
                     <defs>
                       <linearGradient id="capGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#00c389" stopOpacity={0.25} />
-                        <stop offset="95%" stopColor="#00c389" stopOpacity={0} />
+                        <stop offset="5%" stopColor={seriesColors.success} stopOpacity={0.25} />
+                        <stop offset="95%" stopColor={seriesColors.success} stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="prevCapGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#4a90d9" stopOpacity={0.15} />
-                        <stop offset="95%" stopColor="#4a90d9" stopOpacity={0} />
+                        <stop offset="5%" stopColor={seriesColors.comparison} stopOpacity={0.15} />
+                        <stop offset="95%" stopColor={seriesColors.comparison} stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1e2d42" vertical={false} />
-                    <XAxis dataKey="name" stroke="#6b7a8f" tick={{ fill: '#6b7a8f', fontSize: 11 }} />
-                    <YAxis stroke="#6b7a8f" tick={{ fill: '#6b7a8f', fontSize: 11 }} />
-                    <Tooltip {...TOOLTIP_STYLE} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={seriesColors.grid} vertical={false} />
+                    <XAxis dataKey="name" stroke={seriesColors.axis} tick={{ fill: seriesColors.axis, fontSize: 11 }} />
+                    <YAxis stroke={seriesColors.axis} tick={{ fill: seriesColors.axis, fontSize: 11 }} />
+                    <Tooltip {...tooltipStyle} />
                     {showComparison && <Legend wrapperStyle={{ fontSize: '0.78rem' }} />}
-                    <Area type="monotone" dataKey="capital" stroke="#00c389" strokeWidth={2.5} fill="url(#capGrad)" name="USDC Locked" />
+                    <Area type="monotone" dataKey="capital" stroke={seriesColors.success} strokeWidth={2.5} fill="url(#capGrad)" name="USDC Locked" isAnimationActive={chartAnimationEnabled} />
                     {showComparison && (
-                      <Area type="monotone" dataKey="prevCapital" stroke="#4a90d9" strokeWidth={1.5} fill="url(#prevCapGrad)" name="Prev Period" strokeDasharray="5 3" />
+                      <Area type="monotone" dataKey="prevCapital" stroke={seriesColors.comparison} strokeWidth={1.5} fill="url(#prevCapGrad)" name="Prev Period" strokeDasharray="5 3" isAnimationActive={chartAnimationEnabled} />
                     )}
                   </AreaChart>
                 </ResponsiveContainer>
@@ -599,14 +670,17 @@ export default function Analytics() {
             {/* Milestone Trend */}
             <Card>
               <ChartTitle>Milestone Completion Trend</ChartTitle>
+              <ChartSummary>
+                Bar chart showing completed milestone counts for each point in the selected {period} period.
+              </ChartSummary>
               {isLoading ? <SkeletonBox /> : !hasData ? <EmptyState /> : (
                 <ResponsiveContainer width="100%" height={220}>
                   <BarChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1e2d42" vertical={false} />
-                    <XAxis dataKey="name" stroke="#6b7a8f" tick={{ fill: '#6b7a8f', fontSize: 11 }} />
-                    <YAxis stroke="#6b7a8f" tick={{ fill: '#6b7a8f', fontSize: 11 }} />
-                    <Tooltip {...TOOLTIP_STYLE} />
-                    <Bar dataKey="milestones" fill="#00c389" radius={[4, 4, 0, 0]} name="Milestones Completed" />
+                    <CartesianGrid strokeDasharray="3 3" stroke={seriesColors.grid} vertical={false} />
+                    <XAxis dataKey="name" stroke={seriesColors.axis} tick={{ fill: seriesColors.axis, fontSize: 11 }} />
+                    <YAxis stroke={seriesColors.axis} tick={{ fill: seriesColors.axis, fontSize: 11 }} />
+                    <Tooltip {...tooltipStyle} />
+                    <Bar dataKey="milestones" fill={seriesColors.milestone} radius={[4, 4, 0, 0]} name="Milestones Completed" isAnimationActive={chartAnimationEnabled} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -623,22 +697,25 @@ export default function Analytics() {
             {/* Donut */}
             <Card>
               <ChartTitle>Vaults by Status</ChartTitle>
+              <ChartSummary>
+                Donut chart summarizing vault status counts: 14 completed, 3 active, and 4 failed.
+              </ChartSummary>
               {isLoading ? <SkeletonBox height={180} /> : !hasData ? <EmptyState /> : (
                 <>
                   <ResponsiveContainer width="100%" height={180}>
                     <PieChart>
-                      <Pie data={vaultStatusData} innerRadius={50} outerRadius={75} paddingAngle={4} dataKey="value">
+                      <Pie data={vaultStatusData} innerRadius={50} outerRadius={75} paddingAngle={4} dataKey="value" isAnimationActive={chartAnimationEnabled}>
                         {vaultStatusData.map((_, i) => (
-                          <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                          <Cell key={i} fill={seriesColors.pie[i % seriesColors.pie.length]} />
                         ))}
                       </Pie>
-                      <Tooltip contentStyle={{ background: '#0a0e17', border: '1px solid #1e2d42', borderRadius: '10px' }} />
+                      <Tooltip {...tooltipStyle} />
                     </PieChart>
                   </ResponsiveContainer>
                   <div style={{ display: 'flex', justifyContent: 'center', gap: '1.25rem', marginTop: '0.5rem' }}>
                     {vaultStatusData.map((entry, i) => (
                       <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem', color: 'var(--muted)' }}>
-                        <span style={{ width: 9, height: 9, borderRadius: '50%', background: PIE_COLORS[i], display: 'inline-block' }} />
+                        <span style={{ width: 9, height: 9, borderRadius: '50%', background: seriesColors.pie[i], display: 'inline-block' }} />
                         {entry.name} ({entry.value})
                       </div>
                     ))}
@@ -677,7 +754,7 @@ export default function Analytics() {
                     <span style={{ color: 'var(--muted)' }}>{m.count}</span>
                   </div>
                   <div style={{ height: 5, background: 'var(--border)', borderRadius: 99 }}>
-                    <div style={{ height: '100%', width: `${(m.count / 12) * 100}%`, background: '#00c389', borderRadius: 99, transition: 'width 0.4s' }} />
+                    <div className="disciplr-progress-bar" style={{ height: '100%', width: `${(m.count / 12) * 100}%`, background: seriesColors.milestone, borderRadius: 99, transition: 'width 0.4s' }} />
                   </div>
                 </div>
               ))}
@@ -692,29 +769,29 @@ export default function Analytics() {
           <div className="insights-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '1rem' }}>
 
             <Card style={{ textAlign: 'center' }}>
-              <Flame size={26} color="#ff6b35" style={{ marginBottom: '0.4rem' }} />
-              <div style={{ fontSize: '2.4rem', fontWeight: 800, color: '#ff6b35', lineHeight: 1 }}>5</div>
+              <Flame size={26} color={seriesColors.warning} style={{ marginBottom: '0.4rem' }} />
+              <div style={{ fontSize: '2.4rem', fontWeight: 800, color: seriesColors.warning, lineHeight: 1 }}>5</div>
               <div style={{ fontWeight: 600, margin: '0.3rem 0 0.15rem' }}>Current Streak</div>
               <div style={{ color: 'var(--muted)', fontSize: '0.78rem' }}>consecutive successes 🔥</div>
             </Card>
 
             <Card style={{ textAlign: 'center' }}>
-              <TrendingUp size={26} color="#00c389" style={{ marginBottom: '0.4rem' }} />
-              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#00c389', lineHeight: 1 }}>June</div>
+              <TrendingUp size={26} color={seriesColors.success} style={{ marginBottom: '0.4rem' }} />
+              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: seriesColors.success, lineHeight: 1 }}>June</div>
               <div style={{ fontWeight: 600, margin: '0.3rem 0 0.15rem' }}>Best Period</div>
               <div style={{ color: 'var(--muted)', fontSize: '0.78rem' }}>92% success rate</div>
             </Card>
 
             <Card style={{ textAlign: 'center' }}>
-              <AlertTriangle size={26} color="#e5534b" style={{ marginBottom: '0.4rem' }} />
-              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#e5534b', lineHeight: 1 }}>Q1</div>
+              <AlertTriangle size={26} color={seriesColors.failed} style={{ marginBottom: '0.4rem' }} />
+              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: seriesColors.failed, lineHeight: 1 }}>Q1</div>
               <div style={{ fontWeight: 600, margin: '0.3rem 0 0.15rem' }}>Needs Work</div>
               <div style={{ color: 'var(--muted)', fontSize: '0.78rem' }}>3 failed vaults Jan–Mar</div>
             </Card>
 
             <Card style={{ textAlign: 'center' }}>
-              <Award size={26} color="#00c389" style={{ marginBottom: '0.4rem' }} />
-              <div style={{ fontSize: '2.4rem', fontWeight: 800, color: '#00c389', lineHeight: 1 }}>82</div>
+              <Award size={26} color={seriesColors.success} style={{ marginBottom: '0.4rem' }} />
+              <div style={{ fontSize: '2.4rem', fontWeight: 800, color: seriesColors.success, lineHeight: 1 }}>82</div>
               <div style={{ fontWeight: 600, margin: '0.3rem 0 0.15rem' }}>Accountability Score</div>
               <div style={{ color: 'var(--muted)', fontSize: '0.78rem' }}>out of 100 · Top 15%</div>
             </Card>
@@ -729,19 +806,19 @@ export default function Analytics() {
 
             <Card>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.65rem' }}>
-                <ArrowUpRight size={17} color="#00c389" />
+                <ArrowUpRight size={17} color={seriesColors.success} />
                 <span style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>Released to Success</span>
               </div>
-              <div style={{ fontSize: '1.7rem', fontWeight: 800, color: '#00c389' }}>$8,750 USDC</div>
+              <div style={{ fontSize: '1.7rem', fontWeight: 800, color: seriesColors.success }}>$8,750 USDC</div>
               <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: '0.25rem' }}>Paid out to 14 success addresses</div>
             </Card>
 
             <Card>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.65rem' }}>
-                <ArrowDownRight size={17} color="#e5534b" />
+                <ArrowDownRight size={17} color={seriesColors.failed} />
                 <span style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>Redirected on Failure</span>
               </div>
-              <div style={{ fontSize: '1.7rem', fontWeight: 800, color: '#e5534b' }}>$2,400 USDC</div>
+              <div style={{ fontSize: '1.7rem', fontWeight: 800, color: seriesColors.failed }}>$2,400 USDC</div>
               <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: '0.25rem' }}>Sent to 4 failure destinations</div>
             </Card>
 
@@ -766,15 +843,15 @@ export default function Analytics() {
                 <div key={i}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '0.4rem' }}>
                     <span style={{ color: 'var(--muted)' }}>{item.metric}</span>
-                    <span style={{ color: item.you >= item.platform ? '#00c389' : '#e5534b', fontWeight: 700 }}>
+                    <span style={{ color: item.you >= item.platform ? seriesColors.success : seriesColors.failed, fontWeight: 700 }}>
                       {item.you >= item.platform ? '↑' : '↓'} You: {item.you}{i === 0 || i === 2 ? (i === 0 ? '%' : '') : (i === 3 ? '' : 'd')}
                     </span>
                   </div>
                   {/* Your bar */}
                   <div style={{ marginBottom: '0.25rem' }}>
-                    <div style={{ fontSize: '0.72rem', color: '#00c389', marginBottom: '0.15rem' }}>You</div>
+                    <div style={{ fontSize: '0.72rem', color: seriesColors.success, marginBottom: '0.15rem' }}>You</div>
                     <div style={{ height: 8, background: 'var(--border)', borderRadius: 99 }}>
-                      <div style={{ height: '100%', width: `${Math.min((item.you / (Math.max(item.you, item.platform) * 1.2)) * 100, 100)}%`, background: '#00c389', borderRadius: 99 }} />
+                      <div className="disciplr-progress-bar" style={{ height: '100%', width: `${Math.min((item.you / (Math.max(item.you, item.platform) * 1.2)) * 100, 100)}%`, background: seriesColors.success, borderRadius: 99 }} />
                     </div>
                   </div>
                   {/* Platform bar */}
@@ -810,19 +887,19 @@ export default function Analytics() {
                 <div style={{ marginTop: '0.75rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '0.25rem' }}>
                     <span style={{ color: 'var(--muted)' }}>Current: 85%</span>
-                    <span style={{ color: Number(goalRate) <= 85 ? '#00c389' : '#4a90d9' }}>
+                    <span style={{ color: Number(goalRate) <= 85 ? seriesColors.success : seriesColors.comparison }}>
                       Goal: {goalRate}%
                     </span>
                   </div>
                   <div style={{ height: 8, background: 'var(--border)', borderRadius: 99, position: 'relative' }}>
-                    <div style={{ height: '100%', width: `${Math.min(85, 100)}%`, background: '#00c389', borderRadius: 99 }} />
+                    <div className="disciplr-progress-bar" style={{ height: '100%', width: `${Math.min(85, 100)}%`, background: seriesColors.success, borderRadius: 99 }} />
                     <div style={{
                       position: 'absolute', top: -2, left: `${Math.min(Number(goalRate), 100)}%`,
-                      width: 3, height: 12, background: '#4a90d9', borderRadius: 2,
+                      width: 3, height: 12, background: seriesColors.comparison, borderRadius: 2,
                       transform: 'translateX(-50%)',
                     }} />
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: Number(goalRate) <= 85 ? '#00c389' : 'var(--muted)', marginTop: '0.3rem' }}>
+                  <div style={{ fontSize: '0.75rem', color: Number(goalRate) <= 85 ? seriesColors.success : 'var(--muted)', marginTop: '0.3rem' }}>
                     {Number(goalRate) <= 85 ? '✓ Goal achieved!' : `${Number(goalRate) - 85}% to go`}
                   </div>
                 </div>
@@ -838,19 +915,19 @@ export default function Analytics() {
                 <div style={{ marginTop: '0.75rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '0.25rem' }}>
                     <span style={{ color: 'var(--muted)' }}>Current: $3,200</span>
-                    <span style={{ color: Number(goalCapital) <= 3200 ? '#00c389' : '#4a90d9' }}>
+                    <span style={{ color: Number(goalCapital) <= 3200 ? seriesColors.success : seriesColors.comparison }}>
                       Goal: ${Number(goalCapital).toLocaleString()}
                     </span>
                   </div>
                   <div style={{ height: 8, background: 'var(--border)', borderRadius: 99, position: 'relative' }}>
-                    <div style={{ height: '100%', width: `${Math.min((3200 / Math.max(Number(goalCapital), 3200)) * 100, 100)}%`, background: '#00c389', borderRadius: 99 }} />
+                    <div className="disciplr-progress-bar" style={{ height: '100%', width: `${Math.min((3200 / Math.max(Number(goalCapital), 3200)) * 100, 100)}%`, background: seriesColors.success, borderRadius: 99 }} />
                     <div style={{
                       position: 'absolute', top: -2,
                       left: `${Math.min((Number(goalCapital) / Math.max(Number(goalCapital), 3200)) * 100, 100)}%`,
-                      width: 3, height: 12, background: '#4a90d9', borderRadius: 2, transform: 'translateX(-50%)',
+                      width: 3, height: 12, background: seriesColors.comparison, borderRadius: 2, transform: 'translateX(-50%)',
                     }} />
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: Number(goalCapital) <= 3200 ? '#00c389' : 'var(--muted)', marginTop: '0.3rem' }}>
+                  <div style={{ fontSize: '0.75rem', color: Number(goalCapital) <= 3200 ? seriesColors.success : 'var(--muted)', marginTop: '0.3rem' }}>
                     {Number(goalCapital) <= 3200 ? '✓ Goal achieved!' : `$${(Number(goalCapital) - 3200).toLocaleString()} to go`}
                   </div>
                 </div>
@@ -860,9 +937,9 @@ export default function Analytics() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                 <div style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>Quick Insights</div>
                 {[
-                  { icon: <BarChart2 size={14} color="#00c389" />, text: 'You outperform 85% of users' },
-                  { icon: <Flame size={14} color="#ff6b35" />, text: 'Keep your 5-vault streak going' },
-                  { icon: <CheckCircle size={14} color="#00c389" />, text: 'Best month was June (92%)' },
+                  { icon: <BarChart2 size={14} color={seriesColors.success} />, text: 'You outperform 85% of users' },
+                  { icon: <Flame size={14} color={seriesColors.warning} />, text: 'Keep your 5-vault streak going' },
+                  { icon: <CheckCircle size={14} color={seriesColors.success} />, text: 'Best month was June (92%)' },
                 ].map((tip, i) => (
                   <div key={i} style={{
                     display: 'flex', alignItems: 'center', gap: '0.5rem',
@@ -884,8 +961,8 @@ export default function Analytics() {
             <span>Team & Organization Analytics </span>
             <span style={{
               fontSize: '0.7rem',
-              background: 'linear-gradient(135deg, #f5a623, #f76b1c)',
-              color: '#fff',
+              background: seriesColors.warning,
+              color: 'var(--bg)',
               padding: '0.15rem 0.5rem',
               borderRadius: '999px',
               fontWeight: 700,
@@ -896,8 +973,8 @@ export default function Analytics() {
 
           {/* Upgrade banner */}
           <div style={{
-            background: 'rgba(245,166,35,0.07)',
-            border: '1px solid rgba(245,166,35,0.3)',
+            background: chartTokens.accentTransparent,
+            border: `1px solid ${seriesColors.warning}`,
             borderRadius: 'var(--radius)',
             padding: '1.25rem 1.5rem',
             display: 'flex',
@@ -906,7 +983,7 @@ export default function Analytics() {
             marginBottom: '1.25rem',
             flexWrap: 'wrap',
           }}>
-            <Crown size={22} color="#f5a623" style={{ flexShrink: 0 }} />
+            <Crown size={22} color={seriesColors.warning} style={{ flexShrink: 0 }} />
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.2rem' }}>
                 Unlock Team Analytics with Enterprise
@@ -916,8 +993,8 @@ export default function Analytics() {
               </div>
             </div>
             <button style={{
-              background: 'linear-gradient(135deg, #f5a623, #f76b1c)',
-              color: '#fff',
+              background: seriesColors.warning,
+              color: 'var(--bg)',
               border: 'none',
               padding: '0.55rem 1.25rem',
               borderRadius: '999px',
@@ -941,7 +1018,7 @@ export default function Analytics() {
               borderRadius: 'var(--radius)',
             }}>
               <div style={{ textAlign: 'center' }}>
-                <Lock size={28} color="#f5a623" style={{ marginBottom: '0.5rem' }} />
+                <Lock size={28} color={seriesColors.warning} style={{ marginBottom: '0.5rem' }} />
                 <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>Enterprise Feature</div>
                 <div style={{ color: 'var(--muted)', fontSize: '0.8rem', marginTop: '0.2rem' }}>Upgrade to view team data</div>
               </div>
@@ -969,7 +1046,7 @@ export default function Analytics() {
                     {member.name}
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontWeight: 700, color: '#00c389' }}>{member.score}%</div>
+                    <div style={{ fontWeight: 700, color: seriesColors.success }}>{member.score}%</div>
                     <div style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>{member.vaults} vaults</div>
                   </div>
                 </div>
@@ -979,6 +1056,9 @@ export default function Analytics() {
             {/* Team Bar Chart */}
             <Card style={{ opacity: 0.4 }}>
               <ChartTitle>Team Success Rate</ChartTitle>
+              <ChartSummary>
+                Locked enterprise preview bar chart showing example team member success rates.
+              </ChartSummary>
               <ResponsiveContainer width="100%" height={160}>
                 <BarChart data={[
                   { name: 'Alice', rate: 94 },
@@ -986,9 +1066,9 @@ export default function Analytics() {
                   { name: 'Carol', rate: 88 },
                   { name: 'Dave', rate: 65 },
                 ]}>
-                  <XAxis dataKey="name" stroke="#6b7a8f" tick={{ fill: '#6b7a8f', fontSize: 11 }} />
-                  <YAxis stroke="#6b7a8f" tick={{ fill: '#6b7a8f', fontSize: 11 }} unit="%" />
-                  <Bar dataKey="rate" fill="#00c389" radius={[4, 4, 0, 0]} />
+                  <XAxis dataKey="name" stroke={seriesColors.axis} tick={{ fill: seriesColors.axis, fontSize: 11 }} />
+                  <YAxis stroke={seriesColors.axis} tick={{ fill: seriesColors.axis, fontSize: 11 }} unit="%" />
+                  <Bar dataKey="rate" fill={seriesColors.success} radius={[4, 4, 0, 0]} isAnimationActive={chartAnimationEnabled} />
                 </BarChart>
               </ResponsiveContainer>
             </Card>

@@ -1,45 +1,45 @@
 :root {
   /* Light theme (default) */
-  --bg: #F9FAFB;
-  --surface: #F3F4F6;
-  --surface-raised: #E5E7EB;
-  --border: #E5E7EB;
+  --bg: #f9fafb;
+  --surface: #f3f4f6;
+  --surface-raised: #e5e7eb;
+  --border: #e5e7eb;
   --text: #111827;
-  --muted: #4B5563;
-  --accent: #00C389;
-  --accent-dim: #00996E;
+  --muted: #4b5563;
+  --accent: #00c389;
+  --accent-dim: #00996e;
   --accent-transparent: rgba(0, 195, 137, 0.1);
-  --hover: #E5E7EB;
-  --danger: #DC2626;
+  --hover: #e5e7eb;
+  --danger: #dc2626;
   --success: #059669;
-  --warning: #D97706;
-  --info: #2563EB;
+  --warning: #d97706;
+  --info: #2563eb;
 
   /* Border radius scale — mirrors design-system/tokens/borders.json */
-  --radius-none: 0px;        /* sharp corners */
-  --radius-sm: 4px;          /* inputs, tags */
-  --radius-md: 8px;          /* buttons, cards */
-  --radius-lg: 12px;         /* large cards, dropdowns */
-  --radius-xl: 16px;         /* modals, hero cards */
-  --radius-full: 9999px;     /* pills, avatars */
+  --radius-none: 0px; /* sharp corners */
+  --radius-sm: 4px; /* inputs, tags */
+  --radius-md: 8px; /* buttons, cards */
+  --radius-lg: 12px; /* large cards, dropdowns */
+  --radius-xl: 16px; /* modals, hero cards */
+  --radius-full: 9999px; /* pills, avatars */
   /* Legacy alias — kept for backward compatibility, resolves to md */
   --radius: var(--radius-md);
 
   /* Border width scale — mirrors design-system/tokens/borders.json */
   --border-width-0: 0px;
-  --border-width-1: 1px;     /* default */
-  --border-width-2: 2px;     /* emphasis */
-  --border-width-4: 4px;     /* strong emphasis */
+  --border-width-1: 1px; /* default */
+  --border-width-2: 2px; /* emphasis */
+  --border-width-4: 4px; /* strong emphasis */
 
   /* Semantic border colors — light-mode defaults; overridden in dark theme below */
-  --border-default: #E5E7EB;
-  --border-subtle: #F3F4F6;
-  --border-emphasis: #D1D5DB;
-  --border-interactive: #1E40AF;
-  --border-error: #DC2626;
+  --border-default: #e5e7eb;
+  --border-subtle: #f3f4f6;
+  --border-emphasis: #d1d5db;
+  --border-interactive: #1e40af;
+  --border-error: #dc2626;
   --border-success: #059669;
 
-  --font-sans: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
+  --font-sans: "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif";
 
   /* Spacing tokens */
   --spacing-1: 0.25rem;
@@ -49,39 +49,47 @@
   --spacing-6: 1.5rem;
   --spacing-8: 2rem;
 
+  /* Container width tokens */
+  --container-narrow: 640px;
+  --container-standard: 960px;
+  --container-wide: 1100px;
+  --container-max: 1280px;
+  --container-detail: 860px;
+
   /* Touch target minimum */
   --touch-target: 44px;
-  
+
   /* Display Scale - sm breakpoint (< 640px) */
   --font-size-display: 28px;
   --line-height-display: 36px;
   --letter-spacing-display: -0.01em;
   --font-weight-display: 700;
-  
+
   /* Title Scale - sm breakpoint (< 640px) */
   --font-size-title: 20px;
   --line-height-title: 28px;
   --letter-spacing-title: 0;
   --font-weight-title: 600;
-  
+
   /* Body Scale - sm breakpoint (< 640px) */
   --font-size-body: 14px;
   --line-height-body: 20px;
   --letter-spacing-body: 0;
   --font-weight-body: 400;
-  
+
   /* Caption Scale - sm breakpoint (< 640px) */
   --font-size-caption: 12px;
   --line-height-caption: 16px;
   --letter-spacing-caption: 0;
   --font-weight-caption: 400;
-  
+
   /* Mono Scale - sm breakpoint (< 640px) */
   --font-size-mono: 12px;
   --line-height-mono: 18px;
   --letter-spacing-mono: 0;
   --font-weight-mono: 400;
-  --font-family-mono: 'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', monospace;
+  --font-family-mono:
+    "JetBrains Mono", "SF Mono", Monaco, "Cascadia Code", monospace;
 }
 
 /* Responsive breakpoints - update CSS variables */
@@ -91,22 +99,22 @@
     --font-size-display: 48px;
     --line-height-display: 60px;
     --letter-spacing-display: -0.01em;
-    
+
     /* Title at md (640px-768px) */
     --font-size-title: 28px;
     --line-height-title: 36px;
     --letter-spacing-title: -0.01em;
-    
+
     /* Body at md (640px-768px) */
     --font-size-body: 16px;
     --line-height-body: 24px;
     --letter-spacing-body: 0;
-    
+
     /* Caption at md (640px-768px) */
     --font-size-caption: 13px;
     --line-height-caption: 18px;
     --letter-spacing-caption: 0;
-    
+
     /* Mono at md (640px-768px) */
     --font-size-mono: 14px;
     --line-height-mono: 20px;
@@ -120,22 +128,22 @@
     --font-size-display: 72px;
     --line-height-display: 90px;
     --letter-spacing-display: -0.02em;
-    
+
     /* Title at lg (≥768px) */
     --font-size-title: 36px;
     --line-height-title: 44px;
     --letter-spacing-title: -0.01em;
-    
+
     /* Body at lg (≥768px) */
     --font-size-body: 18px;
     --line-height-body: 28px;
     --letter-spacing-body: 0;
-    
+
     /* Caption at lg (≥768px) */
     --font-size-caption: 14px;
     --line-height-caption: 20px;
     --letter-spacing-caption: 0;
-    
+
     /* Mono at lg (≥768px) */
     --font-size-mono: 16px;
     --line-height-mono: 24px;
@@ -188,79 +196,79 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #111827;
-    --surface: #1F2937;
+    --surface: #1f2937;
     --surface-raised: #374151;
-    --border: #4B5563;
-    --text: #F9FAFB;
-    --muted: #9CA3AF;
-    --accent: #14B8A6;
-    --accent-dim: #0D9488;
+    --border: #4b5563;
+    --text: #f9fafb;
+    --muted: #9ca3af;
+    --accent: #14b8a6;
+    --accent-dim: #0d9488;
     --accent-transparent: rgba(20, 184, 166, 0.1);
     --hover: #374151;
-    --danger: #EF4444;
-    --success: #10B981;
-    --warning: #F59E0B;
-    --info: #60A5FA;
+    --danger: #ef4444;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --info: #60a5fa;
 
     /* Semantic border colors — dark mode (mirrors borders.json border.color.dark) */
-    --border-default: #4B5563;
-    --border-subtle: #1F2937;
+    --border-default: #4b5563;
+    --border-subtle: #1f2937;
     --border-emphasis: #374151;
-    --border-interactive: #3B82F6;
-    --border-error: #EF4444;
-    --border-success: #10B981;
+    --border-interactive: #3b82f6;
+    --border-error: #ef4444;
+    --border-success: #10b981;
   }
 }
 
 /* Manual dark theme override (if user selects dark) */
 :root[data-theme="dark"] {
   --bg: #111827;
-  --surface: #1F2937;
+  --surface: #1f2937;
   --surface-raised: #374151;
-  --border: #4B5563;
-  --text: #F9FAFB;
-  --muted: #9CA3AF;
-  --accent: #14B8A6;
-  --accent-dim: #0D9488;
+  --border: #4b5563;
+  --text: #f9fafb;
+  --muted: #9ca3af;
+  --accent: #14b8a6;
+  --accent-dim: #0d9488;
   --accent-transparent: rgba(20, 184, 166, 0.1);
   --hover: #374151;
-  --danger: #EF4444;
-  --success: #10B981;
-  --warning: #F59E0B;
-  --info: #60A5FA;
+  --danger: #ef4444;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --info: #60a5fa;
 
   /* Semantic border colors — dark mode (mirrors borders.json border.color.dark) */
-  --border-default: #4B5563;
-  --border-subtle: #1F2937;
+  --border-default: #4b5563;
+  --border-subtle: #1f2937;
   --border-emphasis: #374151;
-  --border-interactive: #3B82F6;
-  --border-error: #EF4444;
-  --border-success: #10B981;
+  --border-interactive: #3b82f6;
+  --border-error: #ef4444;
+  --border-success: #10b981;
 }
 
 /* Manual light theme override (if user selects light) */
 :root[data-theme="light"] {
-  --bg: #F9FAFB;
-  --surface: #F3F4F6;
-  --surface-raised: #E5E7EB;
-  --border: #E5E7EB;
+  --bg: #f9fafb;
+  --surface: #f3f4f6;
+  --surface-raised: #e5e7eb;
+  --border: #e5e7eb;
   --text: #111827;
-  --muted: #4B5563;
-  --accent: #0A7668;
-  --accent-dim: #095C4F;
+  --muted: #4b5563;
+  --accent: #0a7668;
+  --accent-dim: #095c4f;
   --accent-transparent: rgba(10, 118, 104, 0.1);
-  --hover: #E5E7EB;
-  --danger: #DC2626;
+  --hover: #e5e7eb;
+  --danger: #dc2626;
   --success: #059669;
-  --warning: #D97706;
-  --info: #2563EB;
+  --warning: #d97706;
+  --info: #2563eb;
 
   /* Semantic border colors — light mode (mirrors borders.json border.color.light) */
-  --border-default: #E5E7EB;
-  --border-subtle: #F3F4F6;
-  --border-emphasis: #D1D5DB;
-  --border-interactive: #1E40AF;
-  --border-error: #DC2626;
+  --border-default: #e5e7eb;
+  --border-subtle: #f3f4f6;
+  --border-emphasis: #d1d5db;
+  --border-interactive: #1e40af;
+  --border-error: #dc2626;
   --border-success: #059669;
 }
 
@@ -300,15 +308,17 @@ a:hover {
    read this via the useReducedMotion hook.                                   */
 @media (prefers-reduced-motion: reduce) {
   :root {
-    --duration-micro:    1ms;
-    --duration-fast:     1ms;
-    --duration-normal:   1ms;
+    --duration-micro: 1ms;
+    --duration-fast: 1ms;
+    --duration-normal: 1ms;
     --duration-moderate: 1ms;
-    --duration-slow:     1ms;
-    --duration-slower:   1ms;
+    --duration-slow: 1ms;
+    --duration-slower: 1ms;
   }
 
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 1ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 1ms !important;

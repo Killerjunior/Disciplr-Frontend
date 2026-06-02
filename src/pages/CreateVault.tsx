@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Text } from '../components/Text'
+import { Field } from '../components/Field'
 
 export default function CreateVault() {
   const [amount, setAmount] = useState('')
@@ -30,101 +31,37 @@ export default function CreateVault() {
           maxWidth: 400,
         }}
       >
-        <label>
-          <Text
-            role="caption"
-            as="span"
-            style={{ display: 'block', marginBottom: '0.25rem' }}
-          >
-            Amount (USDC)
-          </Text>
-          <input
-            type="text"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="1000"
-            required
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              borderRadius: 'var(--radius)',
-              border: '1px solid var(--border)',
-              background: 'var(--surface)',
-              color: 'var(--text)',
-            }}
-          />
-        </label>
-        <label>
-          <Text
-            role="caption"
-            as="span"
-            style={{ display: 'block', marginBottom: '0.25rem' }}
-          >
-            Deadline (ISO date)
-          </Text>
-          <input
-            type="datetime-local"
-            value={deadline}
-            onChange={(e) => setDeadline(e.target.value)}
-            required
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              borderRadius: 'var(--radius)',
-              border: '1px solid var(--border)',
-              background: 'var(--surface)',
-              color: 'var(--text)',
-            }}
-          />
-        </label>
-        <label>
-          <Text
-            role="caption"
-            as="span"
-            style={{ display: 'block', marginBottom: '0.25rem' }}
-          >
-            Success destination (Stellar address)
-          </Text>
-          <input
-            type="text"
-            value={successAddress}
-            onChange={(e) => setSuccessAddress(e.target.value)}
-            placeholder="G..."
-            required
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              borderRadius: 'var(--radius)',
-              border: '1px solid var(--border)',
-              background: 'var(--surface)',
-              color: 'var(--text)',
-            }}
-          />
-        </label>
-        <label>
-          <Text
-            role="caption"
-            as="span"
-            style={{ display: 'block', marginBottom: '0.25rem' }}
-          >
-            Failure destination (Stellar address)
-          </Text>
-          <input
-            type="text"
-            value={failureAddress}
-            onChange={(e) => setFailureAddress(e.target.value)}
-            placeholder="G..."
-            required
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              borderRadius: 'var(--radius)',
-              border: '1px solid var(--border)',
-              background: 'var(--surface)',
-              color: 'var(--text)',
-            }}
-          />
-        </label>
+        <Field
+          label="Amount (USDC)"
+          type="text"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="1000"
+          required
+        />
+        <Field
+          label="Deadline (ISO date)"
+          type="datetime-local"
+          value={deadline}
+          onChange={(e) => setDeadline(e.target.value)}
+          required
+        />
+        <Field
+          label="Success destination (Stellar address)"
+          type="text"
+          value={successAddress}
+          onChange={(e) => setSuccessAddress(e.target.value)}
+          placeholder="G..."
+          required
+        />
+        <Field
+          label="Failure destination (Stellar address)"
+          type="text"
+          value={failureAddress}
+          onChange={(e) => setFailureAddress(e.target.value)}
+          placeholder="G..."
+          required
+        />
         <button
           type="submit"
           style={{

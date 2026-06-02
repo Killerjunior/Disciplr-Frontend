@@ -1,73 +1,251 @@
 import { useState, useMemo, useCallback } from "react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-type TxType   = "create" | "validate" | "release" | "redirect";
+type TxType = "create" | "validate" | "release" | "redirect";
 type TxStatus = "confirmed" | "pending" | "failed";
 
 interface Transaction {
-  id:        string;
-  type:      TxType;
-  vault:     string;
-  amount:    number;
-  fee:       number;
-  block:     number;
-  hash:      string;
-  status:    TxStatus;
-  from:      string;
-  to:        string;
+  id: string;
+  type: TxType;
+  vault: string;
+  amount: number;
+  fee: number;
+  block: number;
+  hash: string;
+  status: TxStatus;
+  from: string;
+  to: string;
   timestamp: Date;
-  memo:      string;
+  memo: string;
 }
 
 interface TypeMeta {
-  label:  string;
-  color:  string;
-  bg:     string;
+  label: string;
+  color: string;
+  bg: string;
   border: string;
-  icon:   React.FC<IconProps>;
+  icon: React.FC<IconProps>;
 }
 
 interface StatusMeta {
   label: string;
   color: string;
-  bg:    string;
-  dot:   string;
+  bg: string;
+  dot: string;
 }
 
 interface IconProps {
   color?: string;
-  size?:  number;
+  size?: number;
 }
 
 // ── Mock Data ─────────────────────────────────────────────────────────────────
 const MOCK_TRANSACTIONS: Transaction[] = [
-  { id: "tx1",  type: "create",   vault: "Alpha Vault",  amount: 12500.00, fee: 0.00012, block: 48201933, hash: "a3f9d1c8e2b74056af3d9c1b2e8f0a4d7c5e9b3f1a2d4c6e8b0f2a4c6d8e0f2a", status: "confirmed", from: "GBVZ3...QK7L", to: "GCVAULT...M3P", timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),    memo: "Initial deposit"   },
-  { id: "tx2",  type: "validate", vault: "Alpha Vault",  amount: 0,        fee: 0.00008, block: 48202011, hash: "b4e0c2d9f3a85167bg4e0d2c3f9a5e8b4c6d0e2f4a6c8e0b2d4f6a8c0e2d4f6a", status: "confirmed", from: "GBVZ3...QK7L", to: "GCVAULT...M3P", timestamp: new Date(Date.now() - 1000 * 60 * 60 * 1.5), memo: ""                },
-  { id: "tx3",  type: "release",  vault: "Beta Reserve", amount: 4200.50,  fee: 0.00015, block: 48202450, hash: "c5f1d3e0a4b96278ch5f1e3d4a0b6f9c5d7e1f3b5d7f9b1d3f5b7d9f1b3d5f7b", status: "confirmed", from: "GCVAULT...M3P", to: "GBVZ3...QK7L", timestamp: new Date(Date.now() - 1000 * 60 * 45),          memo: "Milestone payout"  },
-  { id: "tx4",  type: "redirect", vault: "Gamma Fund",   amount: 8800.00,  fee: 0.00011, block: 48202891, hash: "d6a2e4f1b5c07389di6a2f4e5b1c7a0d6e8f2a4c6e8a0c2e4f6a8c0e2f4a6c8e", status: "pending",   from: "GCVAULT...M3P", to: "GDELTA...X9K", timestamp: new Date(Date.now() - 1000 * 60 * 20),          memo: "Redirect to escrow" },
-  { id: "tx5",  type: "create",   vault: "Beta Reserve", amount: 31000.00, fee: 0.00013, block: 48201100, hash: "e7b3f5a2c6d18490ej7b3a5f6c2d8b1e7f9a3b5d7f9b1d3f5b7d9f1b3d5f7b9d", status: "confirmed", from: "GBVZ3...QK7L", to: "GCVAULT...M3P", timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5),    memo: "New vault"         },
-  { id: "tx6",  type: "release",  vault: "Alpha Vault",  amount: 500.00,   fee: 0.00009, block: 48203100, hash: "f8c4a6b3d7e29501fk8c4b6a7d3e9c2f8a0c4b6d8f0b2d4f6a8b0d2f4a6b8d0f", status: "failed",    from: "GCVAULT...M3P", to: "GBVZ3...QK7L", timestamp: new Date(Date.now() - 1000 * 60 * 10),          memo: "Partial release"   },
-  { id: "tx7",  type: "validate", vault: "Gamma Fund",   amount: 0,        fee: 0.00007, block: 48201788, hash: "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2", status: "confirmed", from: "GBVZ3...QK7L", to: "GCVAULT...M3P", timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3.5),  memo: ""                },
-  { id: "tx8",  type: "redirect", vault: "Alpha Vault",  amount: 1200.75,  fee: 0.00010, block: 48203222, hash: "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3", status: "pending",   from: "GCVAULT...M3P", to: "GBVZ3...QK7L", timestamp: new Date(Date.now() - 1000 * 60 * 5),           memo: "Reallocation"      },
-  { id: "tx9",  type: "create",   vault: "Delta Safe",   amount: 99000.00, fee: 0.00020, block: 48200500, hash: "c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4", status: "confirmed", from: "GBVZ3...QK7L", to: "GCVAULT...M3P", timestamp: new Date(Date.now() - 1000 * 60 * 60 * 8),    memo: "Large vault"       },
-  { id: "tx10", type: "release",  vault: "Delta Safe",   amount: 15000.00, fee: 0.00016, block: 48203400, hash: "d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5", status: "confirmed", from: "GCVAULT...M3P", to: "GBVZ3...QK7L", timestamp: new Date(Date.now() - 1000 * 60 * 2),           memo: "Q3 release"        },
+  {
+    id: "tx1",
+    type: "create",
+    vault: "Alpha Vault",
+    amount: 12500.0,
+    fee: 0.00012,
+    block: 48201933,
+    hash: "a3f9d1c8e2b74056af3d9c1b2e8f0a4d7c5e9b3f1a2d4c6e8b0f2a4c6d8e0f2a",
+    status: "confirmed",
+    from: "GBVZ3...QK7L",
+    to: "GCVAULT...M3P",
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
+    memo: "Initial deposit",
+  },
+  {
+    id: "tx2",
+    type: "validate",
+    vault: "Alpha Vault",
+    amount: 0,
+    fee: 0.00008,
+    block: 48202011,
+    hash: "b4e0c2d9f3a85167bg4e0d2c3f9a5e8b4c6d0e2f4a6c8e0b2d4f6a8c0e2d4f6a",
+    status: "confirmed",
+    from: "GBVZ3...QK7L",
+    to: "GCVAULT...M3P",
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 1.5),
+    memo: "",
+  },
+  {
+    id: "tx3",
+    type: "release",
+    vault: "Beta Reserve",
+    amount: 4200.5,
+    fee: 0.00015,
+    block: 48202450,
+    hash: "c5f1d3e0a4b96278ch5f1e3d4a0b6f9c5d7e1f3b5d7f9b1d3f5b7d9f1b3d5f7b",
+    status: "confirmed",
+    from: "GCVAULT...M3P",
+    to: "GBVZ3...QK7L",
+    timestamp: new Date(Date.now() - 1000 * 60 * 45),
+    memo: "Milestone payout",
+  },
+  {
+    id: "tx4",
+    type: "redirect",
+    vault: "Gamma Fund",
+    amount: 8800.0,
+    fee: 0.00011,
+    block: 48202891,
+    hash: "d6a2e4f1b5c07389di6a2f4e5b1c7a0d6e8f2a4c6e8a0c2e4f6a8c0e2f4a6c8e",
+    status: "pending",
+    from: "GCVAULT...M3P",
+    to: "GDELTA...X9K",
+    timestamp: new Date(Date.now() - 1000 * 60 * 20),
+    memo: "Redirect to escrow",
+  },
+  {
+    id: "tx5",
+    type: "create",
+    vault: "Beta Reserve",
+    amount: 31000.0,
+    fee: 0.00013,
+    block: 48201100,
+    hash: "e7b3f5a2c6d18490ej7b3a5f6c2d8b1e7f9a3b5d7f9b1d3f5b7d9f1b3d5f7b9d",
+    status: "confirmed",
+    from: "GBVZ3...QK7L",
+    to: "GCVAULT...M3P",
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5),
+    memo: "New vault",
+  },
+  {
+    id: "tx6",
+    type: "release",
+    vault: "Alpha Vault",
+    amount: 500.0,
+    fee: 0.00009,
+    block: 48203100,
+    hash: "f8c4a6b3d7e29501fk8c4b6a7d3e9c2f8a0c4b6d8f0b2d4f6a8b0d2f4a6b8d0f",
+    status: "failed",
+    from: "GCVAULT...M3P",
+    to: "GBVZ3...QK7L",
+    timestamp: new Date(Date.now() - 1000 * 60 * 10),
+    memo: "Partial release",
+  },
+  {
+    id: "tx7",
+    type: "validate",
+    vault: "Gamma Fund",
+    amount: 0,
+    fee: 0.00007,
+    block: 48201788,
+    hash: "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
+    status: "confirmed",
+    from: "GBVZ3...QK7L",
+    to: "GCVAULT...M3P",
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3.5),
+    memo: "",
+  },
+  {
+    id: "tx8",
+    type: "redirect",
+    vault: "Alpha Vault",
+    amount: 1200.75,
+    fee: 0.0001,
+    block: 48203222,
+    hash: "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3",
+    status: "pending",
+    from: "GCVAULT...M3P",
+    to: "GBVZ3...QK7L",
+    timestamp: new Date(Date.now() - 1000 * 60 * 5),
+    memo: "Reallocation",
+  },
+  {
+    id: "tx9",
+    type: "create",
+    vault: "Delta Safe",
+    amount: 99000.0,
+    fee: 0.0002,
+    block: 48200500,
+    hash: "c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4",
+    status: "confirmed",
+    from: "GBVZ3...QK7L",
+    to: "GCVAULT...M3P",
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 8),
+    memo: "Large vault",
+  },
+  {
+    id: "tx10",
+    type: "release",
+    vault: "Delta Safe",
+    amount: 15000.0,
+    fee: 0.00016,
+    block: 48203400,
+    hash: "d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5",
+    status: "confirmed",
+    from: "GCVAULT...M3P",
+    to: "GBVZ3...QK7L",
+    timestamp: new Date(Date.now() - 1000 * 60 * 2),
+    memo: "Q3 release",
+  },
 ];
 
 const TYPE_META: Record<TxType, TypeMeta> = {
-  create:   { label: "Create",   color: "#6ee7b7", bg: "rgba(110,231,183,0.1)",  border: "rgba(110,231,183,0.25)", icon: CreateIcon   },
-  validate: { label: "Validate", color: "#93c5fd", bg: "rgba(147,197,253,0.1)",  border: "rgba(147,197,253,0.25)", icon: ValidateIcon },
-  release:  { label: "Release",  color: "#fcd34d", bg: "rgba(252,211,77,0.1)",   border: "rgba(252,211,77,0.25)",  icon: ReleaseIcon  },
-  redirect: { label: "Redirect", color: "#f9a8d4", bg: "rgba(249,168,212,0.1)",  border: "rgba(249,168,212,0.25)", icon: RedirectIcon },
+  create: {
+    label: "Create",
+    color: "#6ee7b7",
+    bg: "rgba(110,231,183,0.1)",
+    border: "rgba(110,231,183,0.25)",
+    icon: CreateIcon,
+  },
+  validate: {
+    label: "Validate",
+    color: "#93c5fd",
+    bg: "rgba(147,197,253,0.1)",
+    border: "rgba(147,197,253,0.25)",
+    icon: ValidateIcon,
+  },
+  release: {
+    label: "Release",
+    color: "#fcd34d",
+    bg: "rgba(252,211,77,0.1)",
+    border: "rgba(252,211,77,0.25)",
+    icon: ReleaseIcon,
+  },
+  redirect: {
+    label: "Redirect",
+    color: "#f9a8d4",
+    bg: "rgba(249,168,212,0.1)",
+    border: "rgba(249,168,212,0.25)",
+    icon: RedirectIcon,
+  },
 };
 
 const STATUS_META: Record<TxStatus, StatusMeta> = {
-  confirmed: { label: "Confirmed", color: "#6ee7b7", bg: "rgba(110,231,183,0.08)", dot: "#6ee7b7" },
-  pending:   { label: "Pending",   color: "#fcd34d", bg: "rgba(252,211,77,0.08)",  dot: "#fcd34d" },
-  failed:    { label: "Failed",    color: "#fca5a5", bg: "rgba(252,165,165,0.08)", dot: "#fca5a5" },
+  confirmed: {
+    label: "Confirmed",
+    color: "#6ee7b7",
+    bg: "rgba(110,231,183,0.08)",
+    dot: "#6ee7b7",
+  },
+  pending: {
+    label: "Pending",
+    color: "#fcd34d",
+    bg: "rgba(252,211,77,0.08)",
+    dot: "#fcd34d",
+  },
+  failed: {
+    label: "Failed",
+    color: "#fca5a5",
+    bg: "rgba(252,165,165,0.08)",
+    dot: "#fca5a5",
+  },
 };
 
-const VAULTS = ["All Vaults", ...Array.from(new Set(MOCK_TRANSACTIONS.map((t) => t.vault)))];
-const TYPES: string[]  = ["All Types", "create", "validate", "release", "redirect"];
+const VAULTS = [
+  "All Vaults",
+  ...Array.from(new Set(MOCK_TRANSACTIONS.map((t) => t.vault))),
+];
+const TYPES: string[] = [
+  "All Types",
+  "create",
+  "validate",
+  "release",
+  "redirect",
+];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function truncHash(hash: string, head = 8, tail = 6): string {
@@ -77,49 +255,83 @@ function truncHash(hash: string, head = 8, tail = 6): string {
 
 function fmtTime(date: Date): string {
   const diff = Date.now() - date.getTime();
-  if (diff < 60000)    return "just now";
-  if (diff < 3600000)  return `${Math.floor(diff / 60000)}m ago`;
+  if (diff < 60000) return "just now";
+  if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
   if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 function fmtFullTime(date: Date): string {
   return date.toLocaleString("en-US", {
-    month: "short", day: "numeric", year: "numeric",
-    hour: "2-digit", minute: "2-digit", second: "2-digit",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
   });
 }
 
 function fmtAmount(n: number): string {
   if (n === 0) return "—";
-  return n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return n.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 }
 
 function exportCSV(txs: Transaction[]): void {
-  const headers = ["ID","Type","Vault","Amount (XLM)","Fee (XLM)","Status","Timestamp","Hash","Block","From","To","Memo"];
+  const headers = [
+    "ID",
+    "Type",
+    "Vault",
+    "Amount (XLM)",
+    "Fee (XLM)",
+    "Status",
+    "Timestamp",
+    "Hash",
+    "Block",
+    "From",
+    "To",
+    "Memo",
+  ];
   const rows = txs.map((t) => [
-    t.id, t.type, t.vault, t.amount, t.fee, t.status,
-    t.timestamp.toISOString(), t.hash, t.block, t.from, t.to, t.memo,
+    t.id,
+    t.type,
+    t.vault,
+    t.amount,
+    t.fee,
+    t.status,
+    t.timestamp.toISOString(),
+    t.hash,
+    t.block,
+    t.from,
+    t.to,
+    t.memo,
   ]);
-  const csv = [headers, ...rows].map((r) => r.map((c) => `"${c}"`).join(",")).join("\n");
+  const csv = [headers, ...rows]
+    .map((r) => r.map((c) => `"${c}"`).join(","))
+    .join("\n");
   const blob = new Blob([csv], { type: "text/csv" });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement("a");
-  a.href = url; a.download = "vault-transactions.csv"; a.click();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "vault-transactions.csv";
+  a.click();
   URL.revokeObjectURL(url);
 }
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function VaultTransactions() {
-  const [filterType,   setFilterType]   = useState<string>("All Types");
-  const [filterVault,  setFilterVault]  = useState<string>("All Vaults");
+  const [filterType, setFilterType] = useState<string>("All Types");
+  const [filterVault, setFilterVault] = useState<string>("All Vaults");
   const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [searchHash,   setSearchHash]   = useState<string>("");
-  const [amountMin,    setAmountMin]    = useState<string>("");
-  const [amountMax,    setAmountMax]    = useState<string>("");
-  const [selectedTx,   setSelectedTx]  = useState<Transaction | null>(null);
-  const [copiedId,     setCopiedId]     = useState<string | null>(null);
-  const [sortDir,      setSortDir]      = useState<"asc" | "desc">("desc");
+  const [searchHash, setSearchHash] = useState<string>("");
+  const [amountMin, setAmountMin] = useState<string>("");
+  const [amountMax, setAmountMax] = useState<string>("");
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   const copy = useCallback((text: string, id: string) => {
     navigator.clipboard.writeText(text).catch(() => {});
@@ -129,39 +341,65 @@ export default function VaultTransactions() {
 
   const filtered = useMemo<Transaction[]>(() => {
     let list = [...MOCK_TRANSACTIONS];
-    if (filterType   !== "All Types")  list = list.filter((t) => t.type   === filterType);
-    if (filterVault  !== "All Vaults") list = list.filter((t) => t.vault  === filterVault);
-    if (filterStatus !== "all")        list = list.filter((t) => t.status === filterStatus);
-    if (searchHash.trim())             list = list.filter((t) => t.hash.toLowerCase().includes(searchHash.toLowerCase()));
-    if (amountMin !== "")              list = list.filter((t) => t.amount >= parseFloat(amountMin));
-    if (amountMax !== "")              list = list.filter((t) => t.amount <= parseFloat(amountMax));
+    if (filterType !== "All Types")
+      list = list.filter((t) => t.type === filterType);
+    if (filterVault !== "All Vaults")
+      list = list.filter((t) => t.vault === filterVault);
+    if (filterStatus !== "all")
+      list = list.filter((t) => t.status === filterStatus);
+    if (searchHash.trim())
+      list = list.filter((t) =>
+        t.hash.toLowerCase().includes(searchHash.toLowerCase()),
+      );
+    if (amountMin !== "")
+      list = list.filter((t) => t.amount >= parseFloat(amountMin));
+    if (amountMax !== "")
+      list = list.filter((t) => t.amount <= parseFloat(amountMax));
     list.sort((a, b) =>
       sortDir === "desc"
         ? b.timestamp.getTime() - a.timestamp.getTime()
-        : a.timestamp.getTime() - b.timestamp.getTime()
+        : a.timestamp.getTime() - b.timestamp.getTime(),
     );
     return list;
-  }, [filterType, filterVault, filterStatus, searchHash, amountMin, amountMax, sortDir]);
+  }, [
+    filterType,
+    filterVault,
+    filterStatus,
+    searchHash,
+    amountMin,
+    amountMax,
+    sortDir,
+  ]);
 
   const pending = filtered.filter((t) => t.status === "pending");
-  const failed  = filtered.filter((t) => t.status === "failed");
-  const rest    = filtered.filter((t) => t.status === "confirmed");
+  const failed = filtered.filter((t) => t.status === "failed");
+  const rest = filtered.filter((t) => t.status === "confirmed");
 
-  const stats = useMemo(() => ({
-    total:   MOCK_TRANSACTIONS.length,
-    fees:    MOCK_TRANSACTIONS.reduce((s, t) => s + t.fee, 0),
-    capital: MOCK_TRANSACTIONS.reduce((s, t) => s + t.amount, 0),
-  }), []);
+  const stats = useMemo(
+    () => ({
+      total: MOCK_TRANSACTIONS.length,
+      fees: MOCK_TRANSACTIONS.reduce((s, t) => s + t.fee, 0),
+      capital: MOCK_TRANSACTIONS.reduce((s, t) => s + t.amount, 0),
+    }),
+    [],
+  );
 
   const clearFilters = () => {
-    setFilterType("All Types"); setFilterVault("All Vaults");
-    setFilterStatus("all"); setSearchHash("");
-    setAmountMin(""); setAmountMax("");
+    setFilterType("All Types");
+    setFilterVault("All Vaults");
+    setFilterStatus("all");
+    setSearchHash("");
+    setAmountMin("");
+    setAmountMax("");
   };
 
   const hasFilters =
-    filterType !== "All Types" || filterVault !== "All Vaults" ||
-    filterStatus !== "all" || !!searchHash || !!amountMin || !!amountMax;
+    filterType !== "All Types" ||
+    filterVault !== "All Vaults" ||
+    filterStatus !== "all" ||
+    !!searchHash ||
+    !!amountMin ||
+    !!amountMax;
 
   return (
     <>
@@ -169,7 +407,6 @@ export default function VaultTransactions() {
       <div className="vt-root">
         <div className="vt-grid-bg" />
         <div className="vt-wrap">
-
           {/* Header */}
           <header className="vt-header">
             <div>
@@ -178,9 +415,14 @@ export default function VaultTransactions() {
                 Vault Activity
               </div>
               <h1 className="vt-title">Transaction History</h1>
-              <p className="vt-subtitle">Complete on-chain record of all vault operations</p>
+              <p className="vt-subtitle">
+                Complete on-chain record of all vault operations
+              </p>
             </div>
-            <button className="vt-export-btn" onClick={() => exportCSV(filtered)}>
+            <button
+              className="vt-export-btn"
+              onClick={() => exportCSV(filtered)}
+            >
               <ExportIcon />
               Export CSV
             </button>
@@ -189,9 +431,21 @@ export default function VaultTransactions() {
           {/* Stats */}
           <div className="vt-stats">
             {[
-              { label: "Total Transactions", value: stats.total,                                              sub: `${filtered.length} matching`  },
-              { label: "Total Fees Paid",    value: `${stats.fees.toFixed(5)} XLM`,                          sub: "Network costs"                },
-              { label: "Capital Moved",      value: `${fmtAmount(stats.capital)} XLM`,                       sub: "Across all vaults"            },
+              {
+                label: "Total Transactions",
+                value: stats.total,
+                sub: `${filtered.length} matching`,
+              },
+              {
+                label: "Total Fees Paid",
+                value: `${stats.fees.toFixed(5)} XLM`,
+                sub: "Network costs",
+              },
+              {
+                label: "Capital Moved",
+                value: `${fmtAmount(stats.capital)} XLM`,
+                sub: "Across all vaults",
+              },
             ].map((s, i) => (
               <div className="vt-stat-card" key={i}>
                 <div className="vt-stat-label">{s.label}</div>
@@ -213,32 +467,56 @@ export default function VaultTransactions() {
               />
             </div>
             <div className="vt-filter-row">
-              <Select value={filterType}   onChange={setFilterType}   options={TYPES}  />
-              <Select value={filterVault}  onChange={setFilterVault}  options={VAULTS} />
+              <Select
+                value={filterType}
+                onChange={setFilterType}
+                options={TYPES}
+              />
+              <Select
+                value={filterVault}
+                onChange={setFilterVault}
+                options={VAULTS}
+              />
               <Select
                 value={filterStatus}
                 onChange={setFilterStatus}
                 options={[
-                  { value: "all",       label: "All Statuses" },
-                  { value: "confirmed", label: "Confirmed"    },
-                  { value: "pending",   label: "Pending"      },
-                  { value: "failed",    label: "Failed"       },
+                  { value: "all", label: "All Statuses" },
+                  { value: "confirmed", label: "Confirmed" },
+                  { value: "pending", label: "Pending" },
+                  { value: "failed", label: "Failed" },
                 ]}
               />
               <div className="vt-amount-range">
-                <input className="vt-amount-input" placeholder="Min XLM" value={amountMin} onChange={(e) => setAmountMin(e.target.value)}  type="number" />
+                <input
+                  className="vt-amount-input"
+                  placeholder="Min XLM"
+                  value={amountMin}
+                  onChange={(e) => setAmountMin(e.target.value)}
+                  type="number"
+                />
                 <span className="vt-amount-sep">–</span>
-                <input className="vt-amount-input" placeholder="Max XLM" value={amountMax} onChange={(e) => setAmountMax(e.target.value)} type="number" />
+                <input
+                  className="vt-amount-input"
+                  placeholder="Max XLM"
+                  value={amountMax}
+                  onChange={(e) => setAmountMax(e.target.value)}
+                  type="number"
+                />
               </div>
               <button
                 className="vt-sort-btn"
-                onClick={() => setSortDir((d) => (d === "desc" ? "asc" : "desc"))}
+                onClick={() =>
+                  setSortDir((d) => (d === "desc" ? "asc" : "desc"))
+                }
               >
                 <SortIcon dir={sortDir} />
                 {sortDir === "desc" ? "Newest" : "Oldest"}
               </button>
               {hasFilters && (
-                <button className="vt-clear-btn" onClick={clearFilters}>Clear</button>
+                <button className="vt-clear-btn" onClick={clearFilters}>
+                  Clear
+                </button>
               )}
             </div>
           </div>
@@ -247,7 +525,13 @@ export default function VaultTransactions() {
           {pending.length > 0 && (
             <Section title="Pending" accent="#fcd34d" count={pending.length}>
               {pending.map((tx) => (
-                <TxRow key={tx.id} tx={tx} onSelect={setSelectedTx} onCopy={copy} copiedId={copiedId} />
+                <TxRow
+                  key={tx.id}
+                  tx={tx}
+                  onSelect={setSelectedTx}
+                  onCopy={copy}
+                  copiedId={copiedId}
+                />
               ))}
             </Section>
           )}
@@ -256,7 +540,13 @@ export default function VaultTransactions() {
           {failed.length > 0 && (
             <Section title="Failed" accent="#fca5a5" count={failed.length}>
               {failed.map((tx) => (
-                <TxRow key={tx.id} tx={tx} onSelect={setSelectedTx} onCopy={copy} copiedId={copiedId}>
+                <TxRow
+                  key={tx.id}
+                  tx={tx}
+                  onSelect={setSelectedTx}
+                  onCopy={copy}
+                  copiedId={copiedId}
+                >
                   <button className="vt-retry-btn">Retry →</button>
                 </TxRow>
               ))}
@@ -269,15 +559,25 @@ export default function VaultTransactions() {
               <EmptyState hasFilters={hasFilters} onClear={clearFilters} />
             ) : (
               rest.map((tx) => (
-                <TxRow key={tx.id} tx={tx} onSelect={setSelectedTx} onCopy={copy} copiedId={copiedId} />
+                <TxRow
+                  key={tx.id}
+                  tx={tx}
+                  onSelect={setSelectedTx}
+                  onCopy={copy}
+                  copiedId={copiedId}
+                />
               ))
             )}
           </Section>
-
         </div>
 
         {selectedTx && (
-          <TxModal tx={selectedTx} onClose={() => setSelectedTx(null)} onCopy={copy} copiedId={copiedId} />
+          <TxModal
+            tx={selectedTx}
+            onClose={() => setSelectedTx(null)}
+            onCopy={copy}
+            copiedId={copiedId}
+          />
         )}
       </div>
     </>
@@ -286,9 +586,9 @@ export default function VaultTransactions() {
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 interface SectionProps {
-  title:    string;
-  accent:   string;
-  count:    number;
+  title: string;
+  accent: string;
+  count: number;
   children: React.ReactNode;
 }
 
@@ -306,34 +606,42 @@ function Section({ title, accent, count, children }: SectionProps) {
 }
 
 interface TxRowProps {
-  tx:       Transaction;
+  tx: Transaction;
   onSelect: (tx: Transaction) => void;
-  onCopy:   (text: string, id: string) => void;
+  onCopy: (text: string, id: string) => void;
   copiedId: string | null;
   children?: React.ReactNode;
 }
 
 function TxRow({ tx, onSelect, onCopy, copiedId, children }: TxRowProps) {
-  const meta   = TYPE_META[tx.type];
+  const meta = TYPE_META[tx.type];
   const status = STATUS_META[tx.status];
-  const Icon   = meta.icon;
+  const Icon = meta.icon;
 
   return (
     <div className="vt-tx-row" onClick={() => onSelect(tx)}>
-      <div className="vt-tx-icon" style={{ background: meta.bg, border: `1px solid ${meta.border}` }}>
+      <div
+        className="vt-tx-icon"
+        style={{ background: meta.bg, border: `1px solid ${meta.border}` }}
+      >
         <Icon color={meta.color} />
       </div>
 
       <div className="vt-tx-main">
         <div className="vt-tx-top">
-          <span className="vt-tx-type" style={{ color: meta.color }}>{meta.label}</span>
+          <span className="vt-tx-type" style={{ color: meta.color }}>
+            {meta.label}
+          </span>
           <span className="vt-tx-vault">{tx.vault}</span>
           {tx.memo && <span className="vt-tx-memo">"{tx.memo}"</span>}
         </div>
         <div className="vt-tx-bottom">
           <button
             className="vt-tx-hash"
-            onClick={(e) => { e.stopPropagation(); onCopy(tx.hash, tx.id + "-hash"); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onCopy(tx.hash, tx.id + "-hash");
+            }}
             title="Copy hash"
           >
             {copiedId === tx.id + "-hash" ? "Copied!" : truncHash(tx.hash)}
@@ -354,14 +662,18 @@ function TxRow({ tx, onSelect, onCopy, copiedId, children }: TxRowProps) {
       <div className="vt-tx-amount">
         {tx.amount > 0 && (
           <span className="vt-tx-amount-val">
-            {fmtAmount(tx.amount)}<span className="vt-tx-xlm">XLM</span>
+            {fmtAmount(tx.amount)}
+            <span className="vt-tx-xlm">XLM</span>
           </span>
         )}
         <span className="vt-tx-fee">Fee: {tx.fee.toFixed(5)}</span>
       </div>
 
       <div className="vt-tx-right">
-        <span className="vt-tx-status" style={{ color: status.color, background: status.bg }}>
+        <span
+          className="vt-tx-status"
+          style={{ color: status.color, background: status.bg }}
+        >
           <span className="vt-status-dot" style={{ background: status.dot }} />
           {status.label}
         </span>
@@ -374,41 +686,69 @@ function TxRow({ tx, onSelect, onCopy, copiedId, children }: TxRowProps) {
 }
 
 interface TxModalProps {
-  tx:       Transaction;
-  onClose:  () => void;
-  onCopy:   (text: string, id: string) => void;
+  tx: Transaction;
+  onClose: () => void;
+  onCopy: (text: string, id: string) => void;
   copiedId: string | null;
 }
 
 function TxModal({ tx, onClose, onCopy, copiedId }: TxModalProps) {
   const [rawOpen, setRawOpen] = useState(false);
-  const meta   = TYPE_META[tx.type];
+  const meta = TYPE_META[tx.type];
   const status = STATUS_META[tx.status];
-  const Icon   = meta.icon;
+  const Icon = meta.icon;
 
-  const raw = JSON.stringify({
-    id: tx.id, type: tx.type, vault: tx.vault,
-    amount: tx.amount, fee: tx.fee, block: tx.block,
-    hash: tx.hash, status: tx.status,
-    from: tx.from, to: tx.to, memo: tx.memo,
-    timestamp: tx.timestamp.toISOString(),
-  }, null, 2);
+  const raw = JSON.stringify(
+    {
+      id: tx.id,
+      type: tx.type,
+      vault: tx.vault,
+      amount: tx.amount,
+      fee: tx.fee,
+      block: tx.block,
+      hash: tx.hash,
+      status: tx.status,
+      from: tx.from,
+      to: tx.to,
+      memo: tx.memo,
+      timestamp: tx.timestamp.toISOString(),
+    },
+    null,
+    2,
+  );
 
   return (
     <div className="vt-modal-backdrop" onClick={onClose}>
       <div className="vt-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="vt-modal-close" onClick={onClose}>✕</button>
+        <button className="vt-modal-close" onClick={onClose}>
+          ✕
+        </button>
 
         <div className="vt-modal-header">
-          <div className="vt-modal-icon" style={{ background: meta.bg, border: `1px solid ${meta.border}` }}>
+          <div
+            className="vt-modal-icon"
+            style={{ background: meta.bg, border: `1px solid ${meta.border}` }}
+          >
             <Icon color={meta.color} size={22} />
           </div>
           <div>
-            <div className="vt-modal-type" style={{ color: meta.color }}>{meta.label} Transaction</div>
+            <div className="vt-modal-type" style={{ color: meta.color }}>
+              {meta.label} Transaction
+            </div>
             <div className="vt-modal-vault">{tx.vault}</div>
           </div>
-          <span className="vt-tx-status" style={{ color: status.color, background: status.bg, marginLeft: "auto" }}>
-            <span className="vt-status-dot" style={{ background: status.dot }} />
+          <span
+            className="vt-tx-status"
+            style={{
+              color: status.color,
+              background: status.bg,
+              marginLeft: "auto",
+            }}
+          >
+            <span
+              className="vt-status-dot"
+              style={{ background: status.dot }}
+            />
             {status.label}
           </span>
         </div>
@@ -417,34 +757,52 @@ function TxModal({ tx, onClose, onCopy, copiedId }: TxModalProps) {
           <Field label="Full Hash">
             <div className="vt-modal-hash-row">
               <span className="vt-modal-hash">{tx.hash}</span>
-              <button className="vt-copy-btn" onClick={() => onCopy(tx.hash, "modal-hash")}>
+              <button
+                className="vt-copy-btn"
+                onClick={() => onCopy(tx.hash, "modal-hash")}
+              >
                 {copiedId === "modal-hash" ? "✓" : <CopyIcon />}
               </button>
             </div>
           </Field>
-          <Field label="From"><span className="vt-mono">{tx.from}</span></Field>
-          <Field label="To"><span className="vt-mono">{tx.to}</span></Field>
+          <Field label="From">
+            <span className="vt-mono">{tx.from}</span>
+          </Field>
+          <Field label="To">
+            <span className="vt-mono">{tx.to}</span>
+          </Field>
           <div className="vt-modal-row2">
             <Field label="Amount">
               <span className="vt-modal-amount">
-                {fmtAmount(tx.amount)} <span style={{ opacity: 0.5, fontSize: "0.85em" }}>XLM</span>
+                {fmtAmount(tx.amount)}{" "}
+                <span style={{ opacity: 0.5, fontSize: "0.85em" }}>XLM</span>
               </span>
             </Field>
             <Field label="Fee Paid">
               <span className="vt-modal-amount">
-                {tx.fee.toFixed(5)} <span style={{ opacity: 0.5, fontSize: "0.85em" }}>XLM</span>
+                {tx.fee.toFixed(5)}{" "}
+                <span style={{ opacity: 0.5, fontSize: "0.85em" }}>XLM</span>
               </span>
             </Field>
             <Field label="Block">
               <span className="vt-mono">{tx.block.toLocaleString()}</span>
             </Field>
           </div>
-          <Field label="Timestamp"><span className="vt-mono">{fmtFullTime(tx.timestamp)}</span></Field>
-          {tx.memo && <Field label="Memo"><span>{tx.memo}</span></Field>}
+          <Field label="Timestamp">
+            <span className="vt-mono">{fmtFullTime(tx.timestamp)}</span>
+          </Field>
+          {tx.memo && (
+            <Field label="Memo">
+              <span>{tx.memo}</span>
+            </Field>
+          )}
         </div>
 
         <div className="vt-raw-section">
-          <button className="vt-raw-toggle" onClick={() => setRawOpen((o) => !o)}>
+          <button
+            className="vt-raw-toggle"
+            onClick={() => setRawOpen((o) => !o)}
+          >
             {rawOpen ? "▾" : "▸"} Raw Transaction Data
           </button>
           {rawOpen && <pre className="vt-raw-pre">{raw}</pre>}
@@ -466,7 +824,7 @@ function TxModal({ tx, onClose, onCopy, copiedId }: TxModalProps) {
 }
 
 interface FieldProps {
-  label:    string;
+  label: string;
   children: React.ReactNode;
 }
 
@@ -485,19 +843,27 @@ interface SelectOption {
 }
 
 interface SelectProps {
-  value:    string;
+  value: string;
   onChange: (val: string) => void;
-  options:  string[] | SelectOption[];
+  options: string[] | SelectOption[];
 }
 
 function Select({ value, onChange, options }: SelectProps) {
   const opts: SelectOption[] = options.map((o) =>
-    typeof o === "string" ? { value: o, label: o } : o
+    typeof o === "string" ? { value: o, label: o } : o,
   );
   return (
     <div className="vt-select-wrap">
-      <select className="vt-select" value={value} onChange={(e) => onChange(e.target.value)}>
-        {opts.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+      <select
+        className="vt-select"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      >
+        {opts.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
       </select>
       <ChevronIcon />
     </div>
@@ -506,55 +872,202 @@ function Select({ value, onChange, options }: SelectProps) {
 
 interface EmptyStateProps {
   hasFilters: boolean;
-  onClear:    () => void;
+  onClear: () => void;
 }
 
 function EmptyState({ hasFilters, onClear }: EmptyStateProps) {
   return (
     <div className="vt-empty">
       <div className="vt-empty-icon">◎</div>
-      <div className="vt-empty-title">{hasFilters ? "No matching transactions" : "No transactions yet"}</div>
-      <div className="vt-empty-sub">{hasFilters ? "Try adjusting your filters." : "Vault activity will appear here."}</div>
-      {hasFilters && <button className="vt-clear-btn vt-clear-btn--lg" onClick={onClear}>Clear filters</button>}
+      <div className="vt-empty-title">
+        {hasFilters ? "No matching transactions" : "No transactions yet"}
+      </div>
+      <div className="vt-empty-sub">
+        {hasFilters
+          ? "Try adjusting your filters."
+          : "Vault activity will appear here."}
+      </div>
+      {hasFilters && (
+        <button className="vt-clear-btn vt-clear-btn--lg" onClick={onClear}>
+          Clear filters
+        </button>
+      )}
     </div>
   );
 }
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 function CreateIcon({ color = "currentColor", size = 16 }: IconProps) {
-  return <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke={color} strokeWidth="2" strokeLinecap="round"/></svg>;
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <path
+        d="M8 2v12M2 8h12"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
 }
 function ValidateIcon({ color = "currentColor", size = 16 }: IconProps) {
-  return <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 4.5" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <path
+        d="M3 8l3.5 3.5L13 4.5"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
 }
 function ReleaseIcon({ color = "currentColor", size = 16 }: IconProps) {
-  return <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M8 3v7m-3-3l3 3 3-3" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M3 13h10" stroke={color} strokeWidth="2" strokeLinecap="round"/></svg>;
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <path
+        d="M8 3v7m-3-3l3 3 3-3"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M3 13h10" stroke={color} strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
 }
 function RedirectIcon({ color = "currentColor", size = 16 }: IconProps) {
-  return <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M3 8h10m-4-4l4 4-4 4" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <path
+        d="M3 8h10m-4-4l4 4-4 4"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
 }
 
-interface CopyIconProps { small?: boolean }
+interface CopyIconProps {
+  small?: boolean;
+}
 function CopyIcon({ small }: CopyIconProps) {
   const s = small ? 11 : 14;
   return (
-    <svg width={s} height={s} viewBox="0 0 16 16" fill="none" style={{ display: "inline", marginLeft: small ? 3 : 0, opacity: 0.6 }}>
-      <rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.5"/>
-      <path d="M3 11V3a1 1 0 011-1h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    <svg
+      width={s}
+      height={s}
+      viewBox="0 0 16 16"
+      fill="none"
+      style={{ display: "inline", marginLeft: small ? 3 : 0, opacity: 0.6 }}
+    >
+      <rect
+        x="5"
+        y="5"
+        width="9"
+        height="9"
+        rx="1.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M3 11V3a1 1 0 011-1h8"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
 function SearchIcon({ className }: { className?: string }) {
-  return <svg className={className} width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.5"/><path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>;
+  return (
+    <svg
+      className={className}
+      width="15"
+      height="15"
+      viewBox="0 0 16 16"
+      fill="none"
+    >
+      <circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M10.5 10.5L14 14"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
 }
 function ExportIcon() {
-  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ marginRight: 6 }}><path d="M8 2v8m-3-3l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M3 13h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>;
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      style={{ marginRight: 6 }}
+    >
+      <path
+        d="M8 2v8m-3-3l3 3 3-3"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M3 13h10"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
 }
 function ChevronIcon() {
-  return <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", opacity: 0.5 }}><path d="M2 3.5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+  return (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 10 10"
+      fill="none"
+      style={{
+        position: "absolute",
+        right: 10,
+        top: "50%",
+        transform: "translateY(-50%)",
+        pointerEvents: "none",
+        opacity: 0.5,
+      }}
+    >
+      <path
+        d="M2 3.5l3 3 3-3"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
 }
 function SortIcon({ dir }: { dir: "asc" | "desc" }) {
-  return <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ marginRight: 5 }}><path d={dir === "desc" ? "M2 3h8M3 6h6M4 9h4" : "M4 3h4M3 6h6M2 9h8"} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>;
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 12 12"
+      fill="none"
+      style={{ marginRight: 5 }}
+    >
+      <path
+        d={dir === "desc" ? "M2 3h8M3 6h6M4 9h4" : "M4 3h4M3 6h6M2 9h8"}
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
 }
 
 // ── Styles ────────────────────────────────────────────────────────────────────
@@ -578,7 +1091,7 @@ const CSS = `
   }
   .vt-wrap {
     position: relative; z-index: 1;
-    max-width: 1100px; margin: 0 auto;
+    max-width: var(--container-wide); margin: 0 auto;
     padding: 48px 24px 80px;
   }
   .vt-header {

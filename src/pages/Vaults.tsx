@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
-import { Text } from '../components/Text'
+import { Text } from '../components/Text';
+import VaultCard from '../components/VaultCard';
 
 type VaultStatus = 'active' | 'completed' | 'failed' | 'cancelled' | 'pending_validation'
 
@@ -41,47 +42,18 @@ export default function Vaults() {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-        {MOCK_VAULTS.map((vault) => {
-          const cfg = STATUS_CONFIG[vault.status]
-          return (
-            <Link
-              key={vault.id}
-              to={`/vaults/${vault.id}`}
-              style={{ textDecoration: 'none', color: 'inherit' }}
-            >
-              <div style={{
-                background: 'var(--surface)', border: '1px solid var(--border)',
-                borderRadius: 'var(--radius)', padding: '1rem 1.25rem',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                flexWrap: 'wrap', gap: '0.75rem',
-                transition: 'border-color 0.15s',
-                cursor: 'pointer',
-              }}
-                onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
-                onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
-              >
-                <div>
-                  <Text role="body" as="div" style={{ fontWeight: 600, marginBottom: 4 }}>{vault.name}</Text>
-                  <Text role="caption" as="div" style={{ color: 'var(--muted)' }}>
-                    Deadline: {new Date(vault.deadline).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
-                  </Text>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <Text role="body" as="span" style={{ fontWeight: 700, color: 'var(--accent)' }}>
-                    {vault.amount.toLocaleString()} {vault.currency}
-                  </Text>
-                  <span style={{
-                    background: cfg.bg, color: cfg.color,
-                    border: `var(--border-width-1) solid ${cfg.color}`,
-                    borderRadius: 'var(--radius-full)', padding: '2px 10px', fontSize: 12, fontWeight: 600,
-                  }}>
-                    {cfg.label}
-                  </span>
-                </div>
-              </div>
-            </Link>
-          )
-        })}
+        {MOCK_VAULTS.map(vault => (
+          <VaultCard
+            key={vault.id}
+            id={vault.id}
+            name={vault.name}
+            amount={vault.amount}
+            currency={vault.currency}
+            status={vault.status}
+            deadline={vault.deadline}
+            progressPct={0}
+          />
+        ))}
       </div>
     </div>
   )
