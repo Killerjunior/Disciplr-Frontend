@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { MilestoneTracker } from "../components/MilestoneTracker";
 import { Text } from "../components/Text";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -212,15 +213,6 @@ const STATUS_CONFIG: Record<
     color: "var(--warning)",
     bg: "rgba(245,158,11,0.1)",
   },
-};
-
-const MILESTONE_CONFIG: Record<
-  MilestoneStatus,
-  { label: string; color: string }
-> = {
-  pending: { label: "Pending", color: "var(--muted)" },
-  validated: { label: "Validated", color: "var(--success)" },
-  failed: { label: "Failed", color: "var(--danger)" },
 };
 
 const TX_LABELS: Record<string, string> = {
@@ -638,78 +630,7 @@ export default function VaultDetail() {
         >
           Milestones
         </Text>
-        <div
-          style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}
-        >
-          {vault.milestones.map((m, i) => {
-            const mCfg = MILESTONE_CONFIG[m.status];
-            return (
-              <div
-                key={m.id}
-                style={{
-                  background: "var(--bg)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "var(--radius)",
-                  padding: "1rem",
-                  borderLeft: `3px solid ${mCfg.color}`,
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    flexWrap: "wrap",
-                    gap: 8,
-                    marginBottom: "0.4rem",
-                  }}
-                >
-                  <Text role="body" as="span" style={{ fontWeight: 600 }}>
-                    {i + 1}. {m.title}
-                  </Text>
-                  <span
-                    style={{ color: mCfg.color, fontSize: 12, fontWeight: 600 }}
-                  >
-                    {mCfg.label}
-                  </span>
-                </div>
-                <Text
-                  role="caption"
-                  as="p"
-                  style={{ color: "var(--muted)", margin: "0 0 0.3rem" }}
-                >
-                  {m.description}
-                </Text>
-                <Text
-                  role="caption"
-                  as="p"
-                  style={{ color: "var(--muted)", margin: "0 0 0.3rem" }}
-                >
-                  <strong>Criteria:</strong> {m.criteria}
-                </Text>
-                {m.validatedAt && (
-                  <Text
-                    role="caption"
-                    as="p"
-                    style={{ color: "var(--success)", margin: "0 0 0.3rem" }}
-                  >
-                    Validated {fmtDateTime(m.validatedAt)}
-                  </Text>
-                )}
-                {m.evidenceUrl && (
-                  <a
-                    href={m.evidenceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ fontSize: 12, color: "var(--accent)" }}
-                  >
-                    View evidence ↗
-                  </a>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        <MilestoneTracker milestones={vault.milestones} />
       </Card>
 
       {/* ── Transactions ── */}

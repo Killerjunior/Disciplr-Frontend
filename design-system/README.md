@@ -14,6 +14,11 @@ A comprehensive design system for the Disciplr financial platform.
 
 See `documentation/getting-started.md` for setup instructions.
 
+## Component Documentation
+
+- [`MilestoneTracker`](documentation/milestone-tracker.md) - ordered vault
+  milestone progress with status badges and current-step accessibility.
+
 ## Responsive breakpoints
 
 Disciplr uses a five-step breakpoint scale that is shared between CSS, Tailwind v4
