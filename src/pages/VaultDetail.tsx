@@ -56,6 +56,7 @@ interface Vault {
 
 // ── Mock Data ─────────────────────────────────────────────────────────────────
 const MOCK_VAULTS: Record<string, Vault> = {
+  // Vault 1: active vault
   "1": {
     id: "1",
     name: "Alpha Vault",
@@ -103,6 +104,7 @@ const MOCK_VAULTS: Record<string, Vault> = {
       },
     ],
   },
+  // Vault 2: completed vault (release) without a verifier address
   "2": {
     id: "2",
     name: "Beta Reserve",
@@ -149,6 +151,7 @@ const MOCK_VAULTS: Record<string, Vault> = {
       },
     ],
   },
+  // Vault 3: failed vault (redirect)
   "3": {
     id: "3",
     name: "Gamma Fund",
@@ -184,6 +187,59 @@ const MOCK_VAULTS: Record<string, Vault> = {
         hash: "d6a2e4f1b5c07389di6a2f4e5b1c7a0d",
         timestamp: "2023-12-01T08:00:00Z",
         amount: 8800,
+      },
+    ],
+  },
+  // Vault 4: cancelled vault with mixed milestone statuses and redirect destination
+  "4": {
+    id: "4",
+    name: "Delta Cancelled",
+    status: "cancelled",
+    amount: 5000,
+    currency: "USDC",
+    createdAt: "2023-08-01T08:00:00Z",
+    deadline: "2023-12-01T08:00:00Z",
+    creatorAddress: "GBVZ3KQKM4XNQPBEZMXPOLKQKM4XNQPBEZMXPOLKQK7L",
+    failureAddress: "GFAIL3KQKM4XNQPBEZMXPOLKQKM4XNQPBEZMXPOLKQK",
+    successAddress: "GSUCC3KQKM4XNQPBEZMXPOLKQKM4XNQPBEZMXPOLKQK",
+    contractAddress: "GCONT5KQKM4XNQPBEZMXPOLKQKM4XNQPBEZMXPOLKQK",
+    milestones: [
+      {
+        id: "m1",
+        title: "Milestone 1",
+        description: "First milestone",
+        criteria: "Criteria met",
+        status: "validated",
+      },
+      {
+        id: "m2",
+        title: "Milestone 2",
+        description: "Second milestone",
+        criteria: "Criteria not met",
+        status: "failed",
+      },
+      {
+        id: "m3",
+        title: "Milestone 3",
+        description: "Third milestone",
+        criteria: "Pending criteria",
+        status: "pending",
+      },
+    ],
+    transactions: [
+      {
+        id: "tx1",
+        type: "create",
+        hash: "c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8",
+        timestamp: "2023-08-01T08:00:00Z",
+        amount: 5000,
+      },
+      {
+        id: "tx2",
+        type: "redirect",
+        hash: "d6a2e4f1b5c07389di6a2f4e5b1c7a0d",
+        timestamp: "2023-12-01T08:00:00Z",
+        amount: 5000,
       },
     ],
   },
