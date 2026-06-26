@@ -176,4 +176,61 @@ describe('PendingValidations', () => {
     const safeSpan = screen.getByText('10 days left');
     expect(safeSpan.className).toContain('text-green-600');
   });
+
+  describe('accessible table semantics', () => {
+    it('table has an accessible name', () => {
+      renderPage();
+      expect(screen.getByRole('table', { name: /Pending Validations/i })).toBeInTheDocument();
+    });
+
+    it('all column headers have scope="col"', () => {
+      renderPage();
+      const headers = screen.getAllByRole('columnheader');
+      expect(headers.length).toBeGreaterThan(0);
+      headers.forEach(th => {
+        expect(th).toHaveAttribute('scope', 'col');
+      });
+    });
+
+    it('Deadline column header exposes aria-sort="ascending" by default', () => {
+      renderPage();
+      const deadlineHeader = screen.getByRole('columnheader', { name: /Deadline/i });
+      expect(deadlineHeader).toHaveAttribute('aria-sort', 'ascending');
+    });
+
+    it('aria-sort becomes "descending" after toggling sort to Low to High', () => {
+      renderPage();
+      fireEvent.click(screen.getByRole('button', { name: /High to Low/i }));
+      const deadlineHeader = screen.getByRole('columnheader', { name: /Deadline/i });
+      expect(deadlineHeader).toHaveAttribute('aria-sort', 'descending');
+    });
+
+    it('toggling sort twice restores aria-sort to "ascending"', () => {
+      renderPage();
+      fireEvent.click(screen.getByRole('button', { name: /High to Low/i }));
+      fireEvent.click(screen.getByRole('button', { name: /Low to High/i }));
+      const deadlineHeader = screen.getByRole('columnheader', { name: /Deadline/i });
+      expect(deadlineHeader).toHaveAttribute('aria-sort', 'ascending');
+    });
+
+    it('urgent rows (≤3 days) include a non-color sr-only urgency cue', () => {
+      renderPage();
+      // v-2 has daysRemaining: 2 which is ≤ 3
+      const urgentCue = screen.getByText('Urgent');
+      expect(urgentCue.className).toContain('sr-only');
+    });
+
+    it('non-urgent rows do not include an urgency cue', () => {
+      renderPage();
+      // Only v-2 (daysRemaining: 2) is urgent; v-1 and v-3 are not
+      const urgentCues = screen.getAllByText('Urgent');
+      expect(urgentCues).toHaveLength(1);
+    });
+
+    it('empty table state renders no table role', () => {
+      (useVerifierStore as any).mockReturnValue({ pendingValidations: [] });
+      renderPage();
+      expect(screen.queryByRole('table')).not.toBeInTheDocument();
+    });
+  });
 });

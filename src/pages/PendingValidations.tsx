@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CountdownDeadline } from '../components/CountdownDeadline';
 import { Text } from '../components/Text';
 import { useVerifierStore } from '../Zustand/Store';
 
@@ -48,14 +47,14 @@ export default function PendingValidations() {
             <Text role="body" as="p" className="mt-2">There are no pending validations in your queue.</Text>
           </div>
         ) : (
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse" aria-label="Pending Validations">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="p-4 font-medium text-sm text-gray-600">Vault & Milestone</th>
-                <th className="p-4 font-medium text-sm text-gray-600">Owner</th>
-                <th className="p-4 font-medium text-sm text-gray-600">Amount at Stake</th>
-                <th className="p-4 font-medium text-sm text-gray-600">Deadline</th>
-                <th className="p-4 font-medium text-sm text-gray-600 text-right">Actions</th>
+                <th scope="col" className="p-4 font-medium text-sm text-gray-600">Vault & Milestone</th>
+                <th scope="col" className="p-4 font-medium text-sm text-gray-600">Owner</th>
+                <th scope="col" className="p-4 font-medium text-sm text-gray-600">Amount at Stake</th>
+                <th scope="col" className="p-4 font-medium text-sm text-gray-600" aria-sort={sortOrder === 'asc' ? 'ascending' : 'descending'}>Deadline</th>
+                <th scope="col" className="p-4 font-medium text-sm text-gray-600 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -76,7 +75,12 @@ export default function PendingValidations() {
                   <td className="p-4">
                     <div className="flex flex-col">
                       <Text role="body" as="p" className="text-sm">{task.deadline}</Text>
-                      <CountdownDeadline deadline={task.deadline} />
+                      <span className={`text-sm font-medium ${task.daysRemaining <= 3 ? 'text-red-600' : 'text-green-600'}`}>
+                        {task.daysRemaining} days left
+                      </span>
+                      {task.daysRemaining <= 3 && (
+                        <span className="sr-only">Urgent</span>
+                      )}
                     </div>
                   </td>
                   <td className="p-4 text-right">

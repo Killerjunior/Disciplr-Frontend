@@ -593,14 +593,33 @@ interface SectionProps {
 }
 
 function Section({ title, accent, count, children }: SectionProps) {
+  const hasRows = count > 0;
   return (
     <section className="vt-section">
       <div className="vt-section-header">
-        <span className="vt-section-dot" style={{ background: accent }} />
+        <span className="vt-section-dot" style={{ background: accent }} aria-hidden="true" />
         <span className="vt-section-title">{title}</span>
         <span className="vt-section-count">{count}</span>
       </div>
-      <div className="vt-tx-list">{children}</div>
+      <div
+        className="vt-tx-list"
+        role={hasRows ? "table" : undefined}
+        aria-label={hasRows ? `${title} transactions` : undefined}
+      >
+        {hasRows && (
+          <div role="rowgroup">
+            <div role="row" className="vt-sr-only">
+              <span role="columnheader">Transaction Type</span>
+              <span role="columnheader">Vault &amp; Details</span>
+              <span role="columnheader">Amount</span>
+              <span role="columnheader">Status</span>
+            </div>
+          </div>
+        )}
+        <div role={hasRows ? "rowgroup" : undefined}>
+          {children}
+        </div>
+      </div>
     </section>
   );
 }
@@ -619,15 +638,16 @@ function TxRow({ tx, onSelect, onCopy, copiedId, children }: TxRowProps) {
   const Icon = meta.icon;
 
   return (
-    <div className="vt-tx-row" onClick={() => onSelect(tx)}>
+    <div className="vt-tx-row" role="row" onClick={() => onSelect(tx)}>
       <div
+        role="cell"
         className="vt-tx-icon"
         style={{ background: meta.bg, border: `1px solid ${meta.border}` }}
       >
         <Icon color={meta.color} />
       </div>
 
-      <div className="vt-tx-main">
+      <div role="cell" className="vt-tx-main">
         <div className="vt-tx-top">
           <span className="vt-tx-type" style={{ color: meta.color }}>
             {meta.label}
@@ -659,7 +679,7 @@ function TxRow({ tx, onSelect, onCopy, copiedId, children }: TxRowProps) {
         </div>
       </div>
 
-      <div className="vt-tx-amount">
+      <div role="cell" className="vt-tx-amount">
         {tx.amount > 0 && (
           <span className="vt-tx-amount-val">
             {fmtAmount(tx.amount)}
@@ -669,18 +689,18 @@ function TxRow({ tx, onSelect, onCopy, copiedId, children }: TxRowProps) {
         <span className="vt-tx-fee">Fee: {tx.fee.toFixed(5)}</span>
       </div>
 
-      <div className="vt-tx-right">
+      <div role="cell" className="vt-tx-right">
         <span
           className="vt-tx-status"
           style={{ color: status.color, background: status.bg }}
         >
-          <span className="vt-status-dot" style={{ background: status.dot }} />
+          <span className="vt-status-dot" style={{ background: status.dot }} aria-hidden="true" />
           {status.label}
         </span>
         <span className="vt-tx-time">{fmtTime(tx.timestamp)}</span>
       </div>
 
-      {children}
+      {children && <div role="cell">{children}</div>}
     </div>
   );
 }
@@ -1308,5 +1328,10 @@ const CSS = `
     .vt-stats > :last-child { grid-column: span 1; }
     .vt-header { flex-direction: column; align-items: flex-start; }
     .vt-modal-row2 { grid-template-columns: 1fr; }
+  }
+  .vt-sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0;
+    margin: -1px; overflow: hidden; clip: rect(0,0,0,0);
+    white-space: nowrap; border: 0;
   }
 `;
