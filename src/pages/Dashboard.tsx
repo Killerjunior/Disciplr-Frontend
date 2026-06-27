@@ -3,32 +3,9 @@ import { Text } from '../components/Text';
 import VaultCard from '../components/VaultCard';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-type VaultStatus = "active" | "pending_validation" | "completed" | "failed";
-
-interface VaultPreview {
-  id: string;
-  name: string;
-  amount: number;
-  currency: string;
-  status: VaultStatus;
-  progressPct: number; // 0-100 time elapsed
-  deadline: string;
-}
-
-interface Activity {
-  id: string;
-  type: "created" | "validated" | "released" | "redirected";
-  vault: string;
-  timestamp: string;
-  amount?: number;
-}
-
-interface Deadline {
-  id: string;
-  name: string;
-  deadline: string;
-  amount: number;
-}
+import { useMemo } from 'react';
+import * as dashboardUtils from '../utils/dashboard';
+import type { VaultStatus, VaultPreview, Activity, Deadline } from '../utils/dashboard';
 
 // ── Mock Data ─────────────────────────────────────────────────────────────────
 const SUMMARY = {
@@ -158,26 +135,7 @@ const ACTIVITY_CFG: Record<
   redirected: { label: "Funds redirected", icon: "→", color: "var(--warning)" },
 };
 
-function daysRemaining(deadline: string): number {
-  return Math.max(
-    0,
-    Math.ceil((new Date(deadline).getTime() - Date.now()) / 86400000),
-  );
-}
-
-function urgencyColor(days: number): string {
-  if (days <= 7) return "var(--danger)";
-  if (days <= 30) return "var(--warning)";
-  return "var(--success)";
-}
-
-function relativeTime(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const h = Math.floor(diff / 3600000);
-  if (h < 1) return "just now";
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
-}
+// Pure formatting functions have been extracted to src/utils/dashboard.ts
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 function SummaryCard({
@@ -284,8 +242,22 @@ function SectionHeader({
 }
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
-export default function Dashboard() {
-  const hasVaults = VAULTS.length > 0;
+export default function Dashboard({
+  summary = SUMMARY,
+  vaults = VAULTS,
+  activity = ACTIVITY,
+  deadlines = DEADLINES,
+}: {
+  summary?: typeof SUMMARY;
+  vaults?: VaultPreview[];
+  activity?: Activity[];
+  deadlines?: Deadline[];
+} = {}) {
+  const hasVaults = vaults.length > 0;
+
+  const memoizedSummary = useMemo(() => dashboardUtils.formatSummary(summary), [summary]);
+  const memoizedDeadlines = useMemo(() => dashboardUtils.processDeadlines(deadlines), [deadlines]);
+  const memoizedActivity = useMemo(() => dashboardUtils.processActivity(activity), [activity]);
 
   return (
     <div
@@ -316,21 +288,21 @@ export default function Dashboard() {
       >
         <SummaryCard
           label="Total Locked"
-          value={`$${SUMMARY.totalLocked.toLocaleString()}`}
+          value={memoizedSummary.totalLocked}
           sub="USDC"
           accent
         />
         <SummaryCard
           label="Active Vaults"
-          value={String(SUMMARY.activeVaults)}
+          value={memoizedSummary.activeVaults}
         />
         <SummaryCard
           label="Pending Milestones"
-          value={String(SUMMARY.pendingMilestones)}
+          value={memoizedSummary.pendingMilestones}
         />
         <SummaryCard
           label="Completion Rate"
-          value={`${SUMMARY.completionRate}%`}
+          value={memoizedSummary.completionRate}
           sub="all time"
         />
       </div>
@@ -418,7 +390,7 @@ export default function Dashboard() {
             />
             {hasVaults ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {VAULTS.map(v => (
+                {vaults.map(v => (
                   <VaultCard
                     key={v.id}
                     id={v.id}
@@ -487,7 +459,7 @@ export default function Dashboard() {
                 gap: "0.5rem",
               }}
             >
-              {ACTIVITY.map((a) => {
+              {memoizedActivity.map((a) => {
                 const cfg = ACTIVITY_CFG[a.type];
                 return (
                   <div
@@ -527,13 +499,13 @@ export default function Dashboard() {
                           {a.vault}
                         </span>
                       </Text>
-                      {a.amount != null && (
+                      {a.formattedAmount != null && (
                         <Text
                           role="caption"
                           as="div"
                           style={{ color: "var(--muted)" }}
                         >
-                          {a.amount.toLocaleString()} USDC
+                          {a.formattedAmount}
                         </Text>
                       )}
                     </div>
@@ -542,7 +514,7 @@ export default function Dashboard() {
                       as="span"
                       style={{ color: "var(--muted)", whiteSpace: "nowrap" }}
                     >
-                      {relativeTime(a.timestamp)}
+                      {a.relativeTime}
                     </Text>
                   </div>
                 );
@@ -565,7 +537,7 @@ export default function Dashboard() {
             }}
           >
             <SectionHeader title="Upcoming Deadlines" />
-            {DEADLINES.length === 0 ? (
+            {memoizedDeadlines.length === 0 ? (
               <Text role="caption" as="div" style={{ color: "var(--muted)" }}>
                 No upcoming deadlines.
               </Text>
@@ -577,16 +549,14 @@ export default function Dashboard() {
                   gap: "0.75rem",
                 }}
               >
-                {DEADLINES.map((d) => {
-                  const days = daysRemaining(d.deadline);
-                  const color = urgencyColor(days);
+                {memoizedDeadlines.map((d) => {
                   return (
                     <div
                       key={d.id}
                       style={{
                         background: "var(--bg)",
                         border: `1px solid var(--border)`,
-                        borderLeft: `3px solid ${color}`,
+                        borderLeft: `3px solid ${d.urgencyColor}`,
                         borderRadius: "var(--radius)",
                         padding: "0.75rem",
                       }}
@@ -608,13 +578,13 @@ export default function Dashboard() {
                         </Text>
                         <span
                           style={{
-                            color,
+                            color: d.urgencyColor,
                             fontSize: 12,
                             fontWeight: 700,
                             whiteSpace: "nowrap",
                           }}
                         >
-                          {days === 0 ? "Today" : `${days}d`}
+                          {d.formattedDays}
                         </span>
                       </div>
                       <Text
@@ -622,11 +592,7 @@ export default function Dashboard() {
                         as="div"
                         style={{ color: "var(--muted)", marginTop: 2 }}
                       >
-                        {d.amount.toLocaleString()} USDC ·{" "}
-                        {new Date(d.deadline).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        })}
+                        {d.formattedAmount} · {d.formattedDate}
                       </Text>
                     </div>
                   );
