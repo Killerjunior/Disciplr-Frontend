@@ -254,3 +254,77 @@ describe('WalletContext Horizon USDC balance path', () => {
         error.mockRestore();
     });
 });
+
+describe('WalletContext mount-time auto-restore (checkConnection)', () => {
+    const originalFetch = globalThis.fetch;
+
+    beforeEach(() => {
+        vi.resetAllMocks();
+        freighterMocks.isAllowed.mockResolvedValue(false);
+        freighterMocks.getAddress.mockResolvedValue({ address: null, error: null });
+        freighterMocks.getNetworkDetails.mockResolvedValue({ network: 'TESTNET' });
+        globalThis.fetch = vi.fn();
+    });
+
+    afterAll(() => {
+        globalThis.fetch = originalFetch;
+    });
+
+    test('restores address and balance when isAllowed returns true', async () => {
+        freighterMocks.isAllowed.mockResolvedValue(true);
+        freighterMocks.getAddress.mockResolvedValue({ address: 'GAUTO123', error: null });
+        vi.mocked(globalThis.fetch).mockResolvedValue(
+            mockResponse(200, {
+                balances: [
+                    {
+                        asset_type: 'credit_alphanum4',
+                        asset_code: 'USDC',
+                        asset_issuer: USDC_ISSUERS.TESTNET,
+                        balance: '55.0000000',
+                    },
+                ],
+            }),
+        );
+
+        renderWallet();
+
+        await waitFor(() => expect(screen.getByTestId('address')).toHaveTextContent('GAUTO123'));
+        expect(screen.getByTestId('balance')).toHaveTextContent('55.0000000');
+        expect(screen.getByTestId('balanceStatus')).toHaveTextContent('success');
+    });
+
+    test('stays disconnected when isAllowed returns false', async () => {
+        renderWallet();
+
+        // Let the mount effect settle
+        await waitFor(() => expect(freighterMocks.isAllowed).toHaveBeenCalledTimes(1));
+        expect(screen.getByTestId('address')).toHaveTextContent('');
+        expect(screen.getByTestId('balanceStatus')).toHaveTextContent('idle');
+    });
+
+    test('does not set address when getAddress returns an error', async () => {
+        freighterMocks.isAllowed.mockResolvedValue(true);
+        freighterMocks.getAddress.mockResolvedValue({ address: null, error: 'Key unavailable.' });
+
+        renderWallet();
+
+        await waitFor(() => expect(freighterMocks.getAddress).toHaveBeenCalledTimes(1));
+        expect(screen.getByTestId('address')).toHaveTextContent('');
+        expect(screen.getByTestId('balanceStatus')).toHaveTextContent('idle');
+    });
+
+    test('swallows a thrown error from checkConnection and logs it', async () => {
+        const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+        freighterMocks.isAllowed.mockRejectedValue(new Error('Freighter crashed.'));
+
+        renderWallet();
+
+        await waitFor(() =>
+            expect(consoleSpy).toHaveBeenCalledWith('Check connection error', expect.any(Error)),
+        );
+        expect(screen.getByTestId('address')).toHaveTextContent('');
+        expect(screen.getByTestId('balanceStatus')).toHaveTextContent('idle');
+
+        consoleSpy.mockRestore();
+    });
+});
