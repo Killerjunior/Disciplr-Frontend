@@ -28,6 +28,20 @@ components to the design system.
 - Analytics views should use the chart palette and `src/pages/analyticsTheme.ts`
   instead of hard-coded chart colors.
 
+## Security: Token File Loading
+
+`loadTokens(tokenFile)` in `design-system/src/utils/token-loader.ts` confines
+all file reads to the `tokens/` directory:
+
+- The argument must be a plain basename (no `/`, `\`, or leading dots) with a
+  `.json` extension; anything else throws immediately.
+- The resolved path is asserted to remain inside `path.resolve(cwd, 'tokens')`
+  before the file is opened; a mismatch throws a `Path traversal detected`
+  error.
+
+Pass only static, trusted names (e.g. `'colors.json'`). Never derive the
+`tokenFile` argument from user-supplied or untrusted input.
+
 ## Validation Entry Points
 
 > 📝 **Adding a new token?** Please refer to the [Token Authoring Guide](./token-authoring.md) for required formats, naming conventions, and validation rules.
