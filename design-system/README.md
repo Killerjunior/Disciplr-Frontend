@@ -16,6 +16,12 @@ See `documentation/getting-started.md` for setup instructions.
 
 For a -to-component map, see `documentation/token-catalog.md`.
 
+## Testing
+
+This package uses Jest with `ts-jest` for token and validator tests. See
+[`../docs/TESTING.md`](../docs/TESTING.md#design-system-jest-patterns) for the
+design-system test command, coverage threshold, and contributor conventions.
+
 ## Component Documentation
 
 - [`MilestoneTracker`](documentation/milestone-tracker.md) - ordered vault

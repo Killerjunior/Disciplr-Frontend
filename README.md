@@ -131,6 +131,10 @@ Design-system package scripts:
 Frontend tests use Vitest, the DOM test setup in `src/setupTests.ts`, and
 Testing Library.
 
+For contributor conventions, reusable mocking recipes, coverage guidance, and
+the split between the app Vitest stack and the design-system Jest stack, see
+[`docs/TESTING.md`](docs/TESTING.md).
+
 **CI / one-off run (with coverage):**
 
 ```bash
