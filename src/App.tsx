@@ -4,8 +4,7 @@ import { WalletProvider } from './context/WalletContext'
 import { ThemeProvider } from './context/ThemeContext'
 import Layout from './components/Layout'
 import Skeleton from './components/Skeleton'
-
-// Critical paths — eagerly loaded for instant navigation
+import ErrorBoundary from './components/ErrorBoundary'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import Vaults from './pages/Vaults'
@@ -18,7 +17,6 @@ import ValidationDetail from './pages/ValidationDetail'
 import ValidationHistory from './pages/ValidationHistory'
 import NotFound from './pages/NotFound'
 
-// Heavy routes — split into separate chunks, loaded on demand
 const Analytics = lazy(() => import('./pages/Analytics'))
 const Notification = lazy(() => import('./pages/Notification'))
 
@@ -29,44 +27,40 @@ export default function App() {
     <ThemeProvider>
       <WalletProvider>
         <BrowserRouter>
-          <Layout>
-            <Routes>
-              {/* Critical paths */}
-              <Route path="/" element={<Home />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/vaults" element={<Vaults />} />
-              <Route path="/vaults/create" element={<CreateVault />} />
-              <Route path="/vaults/:id" element={<VaultDetail />} />
-              <Route path="/vaults/:id/transactions" element={<VaultTransactions />} />
-              <Route path="/transactions" element={<VaultTransactions />} />
-
-              {/* Verifier routes */}
-              <Route path="/verifier" element={<VerifierDashboard />} />
-              <Route path="/verifier/queue" element={<PendingValidations />} />
-              <Route path="/verifier/queue/:vaultId" element={<ValidationDetail />} />
-              <Route path="/verifier/history" element={<ValidationHistory />} />
-
-              {/* Lazy-loaded heavy routes */}
-              <Route
-                path="/analytics"
-                element={
-                  <Suspense fallback={PageFallback}>
-                    <Analytics />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="/notifications"
-                element={
-                  <Suspense fallback={PageFallback}>
-                    <Notification />
-                  </Suspense>
-                }
-              />
-
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Layout>
+          <ErrorBoundary>
+            <Layout>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/vaults" element={<Vaults />} />
+                <Route path="/vaults/create" element={<CreateVault />} />
+                <Route path="/vaults/:id" element={<VaultDetail />} />
+                <Route path="/vaults/:id/transactions" element={<VaultTransactions />} />
+                <Route path="/transactions" element={<VaultTransactions />} />
+                <Route path="/verifier" element={<VerifierDashboard />} />
+                <Route path="/verifier/queue" element={<PendingValidations />} />
+                <Route path="/verifier/queue/:vaultId" element={<ValidationDetail />} />
+                <Route path="/verifier/history" element={<ValidationHistory />} />
+                <Route
+                  path="/analytics"
+                  element={
+                    <Suspense fallback={PageFallback}>
+                      <Analytics />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/notifications"
+                  element={
+                    <Suspense fallback={PageFallback}>
+                      <Notification />
+                    </Suspense>
+                  }
+                />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Layout>
+          </ErrorBoundary>
         </BrowserRouter>
       </WalletProvider>
     </ThemeProvider>
