@@ -1,12 +1,13 @@
-import { Link } from 'react-router-dom'
-import { Text } from '../components/Text';
-import VaultCard from '../components/VaultCard';
+import { Link } from "react-router-dom";
+import { Text } from "../components/Text";
+import VaultCard from "../components/VaultCard";
+import UpcomingDeadlines from "../components/UpcomingDeadlines";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-import { useMemo } from 'react';
-import * as dashboardUtils from '../utils/dashboard';
-import type { VaultPreview, Activity, Deadline } from '../utils/dashboard';
-import type { VaultStatus } from '../types/vault';
+import { useMemo } from "react";
+import * as dashboardUtils from "../utils/dashboard";
+import type { VaultPreview, Activity, Deadline } from "../utils/dashboard";
+import type { VaultStatus } from "../types/vault";
 
 // ── Mock Data ─────────────────────────────────────────────────────────────────
 const SUMMARY = {
@@ -261,9 +262,14 @@ export default function Dashboard({
 } = {}) {
   const hasVaults = vaults.length > 0;
 
-  const memoizedSummary = useMemo(() => dashboardUtils.formatSummary(summary), [summary]);
-  const memoizedDeadlines = useMemo(() => dashboardUtils.processDeadlines(deadlines), [deadlines]);
-  const memoizedActivity = useMemo(() => dashboardUtils.processActivity(activity), [activity]);
+  const memoizedSummary = useMemo(
+    () => dashboardUtils.formatSummary(summary),
+    [summary],
+  );
+  const memoizedActivity = useMemo(
+    () => dashboardUtils.processActivity(activity),
+    [activity],
+  );
 
   return (
     <div
@@ -395,8 +401,14 @@ export default function Dashboard({
               to="/vaults"
             />
             {hasVaults ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {vaults.map(v => (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "0.75rem",
+                }}
+              >
+                {vaults.map((v) => (
                   <VaultCard
                     key={v.id}
                     id={v.id}
@@ -533,79 +545,7 @@ export default function Dashboard({
         <div
           style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}
         >
-          {/* Upcoming Deadlines */}
-          <div
-            style={{
-              background: "var(--surface)",
-              border: "1px solid var(--border)",
-              borderRadius: "var(--radius)",
-              padding: "1.25rem",
-            }}
-          >
-            <SectionHeader title="Upcoming Deadlines" />
-            {memoizedDeadlines.length === 0 ? (
-              <Text role="caption" as="div" style={{ color: "var(--muted)" }}>
-                No upcoming deadlines.
-              </Text>
-            ) : (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "0.75rem",
-                }}
-              >
-                {memoizedDeadlines.map((d) => {
-                  return (
-                    <div
-                      key={d.id}
-                      style={{
-                        background: "var(--bg)",
-                        border: `1px solid var(--border)`,
-                        borderLeft: `3px solid ${d.urgencyColor}`,
-                        borderRadius: "var(--radius)",
-                        padding: "0.75rem",
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          gap: 8,
-                        }}
-                      >
-                        <Text
-                          role="caption"
-                          as="div"
-                          style={{ fontWeight: 600 }}
-                        >
-                          {d.name}
-                        </Text>
-                        <span
-                          style={{
-                            color: d.urgencyColor,
-                            fontSize: 12,
-                            fontWeight: 700,
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {d.formattedDays}
-                        </span>
-                      </div>
-                      <Text
-                        role="caption"
-                        as="div"
-                        style={{ color: "var(--muted)", marginTop: 2 }}
-                      >
-                        {d.formattedAmount} · {d.formattedDate}
-                      </Text>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          <UpcomingDeadlines deadlines={deadlines} />
 
           {/* Success Rate Chart (sparkline bars) */}
           <div
